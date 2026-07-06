@@ -346,6 +346,41 @@ const dagmActionStakes = {
   ],
 };
 
+const dagmPreRollQuestions = {
+  "대화": [
+    "부드럽게 꺼내나, 약점을 먼저 찌르나, 이름을 숨긴 채 떠보나?",
+    "호의를 노리나, 시간을 벌나, 상대의 반응부터 보나?",
+  ],
+  "전투": [
+    "바로 치나, 위협으로 멈춰 세우나, 손목이나 발목을 먼저 노리나?",
+    "먼저 붙나, 거리를 재나, 목격자의 시선을 끊나?",
+  ],
+  "이동/돌파": [
+    "바로 뛰나, 발판을 먼저 확인하나, 장비를 버리고 가볍게 움직이나?",
+    "소리를 감수하고 단숨에 가나, 시간을 들여 낮게 붙나, 누가 보는지 먼저 확인하나?",
+  ],
+  "회피/추적": [
+    "지금 빠지나, 흔적을 지우나, 따라오는 자를 다른 길로 유도하나?",
+    "가장 가까운 틈을 타나, 안전해 보이는 길을 고르나, 위험한 지름길을 보나?",
+  ],
+  "조사": [
+    "눈앞의 단서를 잡나, 냄새나 소리를 따라가나, 사람의 표정을 먼저 보나?",
+    "확실한 것 하나를 확인하나, 위험한 추론을 세우나, 누군가에게 먼저 묻나?",
+  ],
+  "마법/율법": [
+    "작게 쓰나, 크게 뒤집나, 대가를 먼저 정하나?",
+    "흔적을 숨기나, 힘을 드러내나, 반동을 감수하나?",
+  ],
+  "정체/휴식": [
+    "더 기다리나, 지금 움직이나, 누군가를 먼저 보내나?",
+    "피해를 줄이나, 기회를 지키나, 위험을 늦추나?",
+  ],
+  "일반 행동": [
+    "바로 시도하나, 조건을 하나 더 만들나, 위험을 먼저 줄이나?",
+    "작게 움직이나, 크게 걸나, 누가 보는지 먼저 확인하나?",
+  ],
+};
+
 const dagmUltraQuestions = [
   "숨기나, 먼저 말하나, 아니면 상대가 착각하게 두나?",
   "물건을 잡나, 사람을 잡나, 아니면 흔적을 지우나?",
@@ -553,6 +588,12 @@ function isStaleDagmResult(result) {
     "선언하는 순간 이 장면은",
     "당신의 선언은",
     "행동으로 읽히",
+    "초고도화 · 감각 선행",
+    "초고도화 · NPC 선행",
+    "초고도화 · 압력 선행",
+    "초고도화 · 단서 선행",
+    "초고도화 · 질문 선행",
+    "초고도화 · 침묵 선행",
     "DAGM 행동 처리",
     "DAGM 초고도화 행동 처리",
   ].some((marker) => text.includes(marker));
@@ -785,6 +826,13 @@ function cleanUltraClause(value) {
     .replace(/[.?!]+$/g, "");
 }
 
+function cleanDisplayClause(value) {
+  return String(value)
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[.?!]+$/g, "");
+}
+
 function pickDagmSceneSeed(action) {
   const text = action.replace(/\s+/g, "");
   if (!text) return pick(dagmSeeds);
@@ -807,40 +855,63 @@ function pickDagmSceneSeed(action) {
 function makeUltraDagmScene(place, seed, action = "") {
   const form = pick(dagmUltraSceneForms);
   const profile = action.trim() ? classifyDagmAction(action) : null;
+
+  if (profile) {
+    return makeUltraDagmPreRollScene(place, seed, profile);
+  }
+
   const context = {
     place,
     seed,
-    actionIntro: profile ? makeActionIntro(action, profile) : "",
-    closeUp: pickDagmCloseUp(profile),
-    npc: pickDagmNpcReaction(profile),
-    world: pickDagmWorldReaction(profile),
-    stake: pickDagmStake(profile),
-    question: pickDagmQuestion(profile),
+    actionIntro: "",
+    closeUp: pickDagmCloseUp(null),
+    npc: pickDagmNpcReaction(null),
+    world: pickDagmWorldReaction(null),
+    stake: pickDagmStake(null),
+    question: pickDagmQuestion(null),
     gmMove: pick(dagmUltraSoftMoves),
   };
 
   return {
-    title: profile ? "DAGM 초고도화 장면 (판정 전)" : "DAGM 초고도화 장면",
-    meta: makeDagmUltraSceneMeta(form, seed, profile),
+    title: "DAGM 초고도화 장면",
+    meta: makeDagmUltraSceneMeta(form, seed, null),
     lines: form.build(context),
   };
 }
 
-function makeActionIntro(action, profile) {
-  if (!action.trim()) return "";
-  return `${pickDagmActionReady(profile)}, ${pickDagmActionOpening(profile)}`;
+function makeUltraDagmPreRollScene(place, seed, profile) {
+  const ready = pickDagmActionReady(profile);
+  const opening = pickDagmActionOpening(profile);
+  const pressure = makePlaceLine(place, seed.focus || seed.sensory);
+  const witness = pickDagmNpcReaction(profile);
+  const stake = pickDagmStake(profile);
+  const question = pickDagmPreRollQuestion(profile);
+
+  return {
+    title: "DAGM 초고도화 장면 (판정 전)",
+    meta: makeDagmPreRollMeta(profile),
+    lines: [
+      `상황: ${ready}, ${cleanDisplayClause(opening)}.`,
+      `압력: ${cleanDisplayClause(pressure)}. ${cleanDisplayClause(witness)}.`,
+      `선택: ${cleanDisplayClause(stake)}. ${question}`,
+    ],
+  };
 }
 
 function makeDagmSceneMeta(density, seed, profile) {
   const base = `${density} · ${seed.impression} / ${seed.pressure} / ${seed.question}`;
   if (!profile) return base;
-  return `${base} · 판정 전 · 후보: ${profile.roll}`;
+  return makeDagmPreRollMeta(profile);
 }
 
 function makeDagmUltraSceneMeta(form, seed, profile) {
   const base = `초고도화 · ${form.label} · ${seed.impression} / ${seed.pressure} / ${seed.question}`;
   if (!profile) return base;
-  return `${base} · 판정 전 · 후보: ${profile.roll}`;
+  return makeDagmPreRollMeta(profile);
+}
+
+function makeDagmPreRollMeta(profile) {
+  return `판정 전 · 후보: ${formatRollCandidate(profile.roll)}`;
 }
 
 function makeUltraDagmAction(action, dice, total, resolved) {
@@ -862,7 +933,7 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     verdict: dagmUltraVerdictLine(resolved.type, cost, opportunity),
     memory: dagmMemoryLine(resolved.type, cost),
     next: pickDagmQuestion(profile),
-    judge: `판정 후보는 ${profile.roll}이다`,
+    judge: `판정 후보는 ${formatRollCandidate(profile.roll)}이다`,
   };
 
   return {
@@ -879,6 +950,25 @@ function pickDagmActionOpening(profile) {
 
 function pickDagmActionReady(profile) {
   return dagmActionReadies[profile?.label ?? "일반 행동"] ?? dagmActionReadies["일반 행동"];
+}
+
+function pickDagmPreRollQuestion(profile) {
+  const questions = dagmPreRollQuestions[profile?.label ?? "일반 행동"];
+  return pick(questions?.length ? questions : dagmPreRollQuestions["일반 행동"]);
+}
+
+function makePlaceLine(place, detail) {
+  const cleanPlace = cleanUltraClause(place || "지금 있는 곳");
+  const cleanDetail = cleanUltraClause(detail || "상황이 조용히 움직인다");
+  return `${cleanPlace}. ${cleanDetail}`;
+}
+
+function formatRollCandidate(roll) {
+  return String(roll)
+    .trim()
+    .replace(/\.\s*/g, " / ")
+    .replace(/\s+/g, " ")
+    .replace(/\s*\/\s*$/g, "");
 }
 
 function pickDagmCloseUp(profile) {
