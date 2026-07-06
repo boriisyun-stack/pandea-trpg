@@ -94,7 +94,8 @@ const dagmOpportunities = [
 const dagmUltraSceneForms = [
   {
     label: "감각 선행",
-    build: ({ place, seed, closeUp, npc, world, question }) => ultraSentence([
+    build: ({ place, seed, actionIntro, closeUp, npc, world, question }) => ultraSentence([
+      actionIntro,
       `${place}에서 ${seed.sensory}`,
       seed.focus,
       seed.pressureLine,
@@ -104,7 +105,8 @@ const dagmUltraSceneForms = [
   },
   {
     label: "NPC 선행",
-    build: ({ place, seed, closeUp, npc, stake, question }) => ultraSentence([
+    build: ({ place, seed, actionIntro, closeUp, npc, stake, question }) => ultraSentence([
+      actionIntro,
       npc,
       `${place}에서 ${seed.focus}`,
       `${stake} ${seed.pressureLine}`,
@@ -113,7 +115,8 @@ const dagmUltraSceneForms = [
   },
   {
     label: "압력 선행",
-    build: ({ place, seed, closeUp, gmMove, world, question }) => ultraSentence([
+    build: ({ place, seed, actionIntro, closeUp, gmMove, world, question }) => ultraSentence([
+      actionIntro,
       seed.pressureLine,
       `${place}에서 ${seed.sensory}`,
       gmMove,
@@ -122,7 +125,8 @@ const dagmUltraSceneForms = [
   },
   {
     label: "단서 선행",
-    build: ({ place, seed, closeUp, npc, stake, question }) => ultraSentence([
+    build: ({ place, seed, actionIntro, closeUp, npc, stake, question }) => ultraSentence([
+      actionIntro,
       closeUp,
       `${place}에서 ${seed.sensory}`,
       npc,
@@ -131,17 +135,18 @@ const dagmUltraSceneForms = [
   },
   {
     label: "질문 선행",
-    build: ({ place, seed, closeUp, world, gmMove, question }) => ultraSentence([
-      `먼저 "${cleanUltraClause(question)}"라는 질문이 선다`,
+    build: ({ place, seed, actionIntro, closeUp, world, gmMove, question }) => ultraSentence([
+      actionIntro,
       `${place}에서 ${seed.focus}`,
       seed.pressureLine,
       gmMove,
       `${closeUp} ${world}`,
-    ], "무엇을 하나"),
+    ], question),
   },
   {
     label: "침묵 선행",
-    build: ({ place, seed, closeUp, npc, stake, question }) => ultraSentence([
+    build: ({ place, seed, actionIntro, closeUp, npc, stake, question }) => ultraSentence([
+      actionIntro,
       `잠깐 조용해지고 ${place}에는 ${seed.pressure}의 무게가 내려앉는다`,
       closeUp,
       npc,
@@ -206,6 +211,39 @@ const dagmUltraCloseUps = [
   "냄새가 먼저 바뀐다. 사람보다 물건이 먼저 거짓말을 한다.",
 ];
 
+const dagmActionCloseUps = {
+  "대화": [
+    "상대의 입보다 손가락이 먼저 반응하고, 대답의 빈틈이 짧게 열린다.",
+    "말이 끝나기 전에 주변 시선이 둘 사이의 거리를 재기 시작한다.",
+    "상대가 네 말을 듣는 척하지만, 시선은 네가 숨긴 물건 쪽으로 먼저 간다.",
+  ],
+  "전투": [
+    "칼끝이 먼저 빛나고, 경비의 손이 허리춤으로 내려간다.",
+    "발소리가 바닥을 치자 가장 가까운 목격자가 한 걸음 물러난다.",
+    "경비의 시선이 네 칼보다 네 발목과 손목의 움직임을 먼저 본다.",
+  ],
+  "회피/추적": [
+    "도망칠 틈은 보이지만, 네 발밑의 흔적도 동시에 선명해진다.",
+    "모퉁이의 그림자가 길을 열고, 뒤쪽 발소리는 한 박자 빨라진다.",
+    "닫힌 줄 알았던 틈 하나가 열리지만, 그 틈은 너무 많은 시선을 지나간다.",
+  ],
+  "조사": [
+    "문서보다 얼룩이 먼저 말하고, 냄새가 방향을 가리킨다.",
+    "작은 흠집 하나가 다른 흔적들과 맞지 않게 삐져나와 있다.",
+    "보려던 것 옆에서 더 오래 숨겨진 흔적이 드러난다.",
+  ],
+  "마법/율법": [
+    "마나의 흐름이 네 손끝보다 먼저 주변 먼지를 끌어당긴다.",
+    "보이지 않는 선 하나가 장면의 공기를 가르고, 누군가 그 변화를 느낀다.",
+    "힘은 모이지만, 그 힘이 남길 냄새와 소문도 함께 짙어진다.",
+  ],
+  "정체/휴식": [
+    "멈춘 사이에도 문밖의 발소리는 한 번 더 가까워진다.",
+    "쉬는 숨은 고르지만, 장면의 시간은 네 편이 아니다.",
+    "기다림은 피해를 줄여도 기회를 그대로 보존해주지는 않는다.",
+  ],
+};
+
 const dagmUltraNpcReactions = [
   "이름 없는 NPC 하나가 모른 척하지만, 네가 움직일 때만 숨을 멈춘다.",
   "상대는 대답을 늦춘다. 늦춘 시간이 대답보다 솔직하다.",
@@ -242,6 +280,39 @@ const dagmUltraQuestions = [
   "이 장면에서 원하는 것은 정보인가, 안전인가, 이름인가?",
 ];
 
+const dagmActionQuestions = {
+  "대화": [
+    "부드럽게 설득하나, 거짓말로 밀어붙이나, 상대의 약점을 찌르나?",
+    "호의를 얻나, 정보를 얻나, 아니면 시간을 버나?",
+    "지금 이름을 밝히나, 숨기나, 다른 이름을 던지나?",
+  ],
+  "전투": [
+    "끝까지 들이받나, 위협으로 멈추나, 경비의 손을 먼저 치나?",
+    "피를 보나, 제압하나, 길만 열고 빠지나?",
+    "칼을 높이 드나, 낮게 파고드나, 목격자를 먼저 의식하나?",
+  ],
+  "회피/추적": [
+    "빠르게 빠지나, 흔적을 지우나, 따라오는 자를 유인하나?",
+    "가장 가까운 틈으로 가나, 안전해 보이는 길로 가나, 위험한 지름길을 타나?",
+    "지금 달리나, 숨나, 누군가를 방패로 삼나?",
+  ],
+  "조사": [
+    "보이는 단서를 잡나, 냄새를 따라가나, 사람의 표정을 먼저 보나?",
+    "확실한 것 하나를 얻나, 위험한 추론을 하나 세우나, 다음 판정까지 기다리나?",
+    "문서, 물건, 사람 중 무엇을 먼저 확인하나?",
+  ],
+  "마법/율법": [
+    "작게 쓰나, 크게 뒤집나, 대가를 먼저 정하나?",
+    "마나의 흔적을 숨기나, 힘을 드러내나, 반동을 감수하나?",
+    "주문을 완성하나, 멈추나, 다른 대가로 바꾸나?",
+  ],
+  "정체/휴식": [
+    "더 쉬나, 지금 움직이나, 누군가를 먼저 보내나?",
+    "피해를 줄이나, 기회를 지키나, 위험을 늦추나?",
+    "기다림을 선택하나, 작은 행동 하나로 시간을 사나?",
+  ],
+};
+
 const dagmUltraSoftMoves = [
   "위험을 먼저 보여주고 선택권을 남긴다.",
   "대가를 예고하되 아직 터뜨리지 않는다.",
@@ -270,7 +341,7 @@ const dagmActionProfiles = [
   },
   {
     label: "전투",
-    keys: ["공격", "때", "벤", "찌르", "쏜", "막", "피하", "붙잡", "제압"],
+    keys: ["공격", "때", "벤", "찌르", "쏜", "막", "피하", "붙잡", "제압", "칼", "검", "무기", "달려", "돌진", "경비에게"],
     roll: "근력/민첩+무기, 방어는 회피/막기/버티기",
     pressure: "피해보다 위치, 시선, 소리가 먼저 전장을 바꾼다.",
     memory: "폭력은 끝나도 누가 먼저 손댔는지는 남는다.",
@@ -461,12 +532,13 @@ function rollAgmQuestion() {
 
 function openDagmScene() {
   syncFields();
-  const seed = pick(dagmSeeds);
+  const action = state.dagmAction.trim();
+  const seed = pickDagmSceneSeed(action);
   const place = state.dagmPlace.trim() || "지금 있는 곳";
   const density = densityLabel(state.dagmDensity);
 
   if (state.dagmDensity === "ultra") {
-    state.dagmResult = makeUltraDagmScene(place, seed);
+    state.dagmResult = makeUltraDagmScene(place, seed, action);
     saveState();
     renderOracleResult(el.dagmOutput, state.dagmResult, "장면을 열거나 행동을 처리한다.");
     setSaveStatus("DAGM 저장됨");
@@ -475,12 +547,13 @@ function openDagmScene() {
 
   const opportunity = pick(dagmOpportunities);
   const lines = [
+    action ? `도입 행동: ${action}` : null,
     `${place}. ${seed.sensory}`,
     seed.focus,
     seed.pressureLine,
     `${seed.questionLine} ${seed.hook}`,
     "무엇을 하나?",
-  ];
+  ].filter(Boolean);
 
   if (state.dagmDensity !== "short") {
     lines.splice(4, 0, `닫히는 기회: ${opportunity}`);
@@ -587,16 +660,36 @@ function cleanUltraClause(value) {
     .replace(/[.?!]+$/g, "");
 }
 
-function makeUltraDagmScene(place, seed) {
+function pickDagmSceneSeed(action) {
+  const text = action.replace(/\s+/g, "");
+  if (!text) return pick(dagmSeeds);
+
+  const profile = classifyDagmAction(action);
+  const candidates = dagmSeeds.filter((seed) => {
+    if (profile.label === "전투") return ["소리", "장소", "이상함"].includes(seed.impression);
+    if (profile.label === "회피/추적") return ["소리", "장소", "이상함"].includes(seed.impression);
+    if (profile.label === "대화") return ["사람", "물건", "이상함"].includes(seed.impression);
+    if (profile.label === "조사") return ["냄새", "물건", "이상함"].includes(seed.impression);
+    if (profile.label === "마법/율법") return ["물건", "이상함", "장소"].includes(seed.impression);
+    if (profile.label === "정체/휴식") return ["냄새", "장소", "이상함"].includes(seed.impression);
+    return true;
+  });
+
+  return pick(candidates.length ? candidates : dagmSeeds);
+}
+
+function makeUltraDagmScene(place, seed, action = "") {
   const form = pick(dagmUltraSceneForms);
+  const profile = action.trim() ? classifyDagmAction(action) : null;
   const context = {
     place,
     seed,
-    closeUp: pick(dagmUltraCloseUps),
+    actionIntro: profile ? makeActionIntro(action, profile) : "",
+    closeUp: pickDagmCloseUp(profile),
     npc: pick(dagmUltraNpcReactions),
     world: pick(dagmUltraWorldReactions),
     stake: pick(dagmUltraStakes),
-    question: pick(dagmUltraQuestions),
+    question: pickDagmQuestion(profile),
     gmMove: pick(dagmUltraSoftMoves),
   };
 
@@ -605,6 +698,10 @@ function makeUltraDagmScene(place, seed) {
     meta: `초고도화 · ${form.label} · ${seed.impression} / ${seed.pressure} / ${seed.question}`,
     lines: form.build(context),
   };
+}
+
+function makeActionIntro(action, profile) {
+  return `네가 ${cleanUltraClause(action)}고 선언하는 순간 이 장면은 ${profile.label}로 열린다`;
 }
 
 function makeUltraDagmAction(action, dice, total, resolved) {
@@ -619,13 +716,13 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     action,
     profile,
     cost,
-    closeUp: pick(dagmUltraCloseUps),
+    closeUp: pickDagmCloseUp(profile),
     npc: pick(dagmUltraNpcReactions),
     world: pick(dagmUltraWorldReactions),
     gmMove,
     verdict: dagmUltraVerdictLine(resolved.type, cost, opportunity),
     memory: dagmMemoryLine(resolved.type, cost),
-    next: pick(dagmUltraQuestions),
+    next: pickDagmQuestion(profile),
     judge: `${profile.label}로 읽히고 판정 후보는 ${profile.roll}이다`,
   };
 
@@ -634,6 +731,18 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     meta: `초고도화 · ${form.label} · 2d6 ${dice[0]}+${dice[1]} = ${total} · ${resolved.answer}`,
     lines: form.build(context),
   };
+}
+
+function pickDagmCloseUp(profile) {
+  if (!profile) return pick(dagmUltraCloseUps);
+  const closeUps = dagmActionCloseUps[profile.label];
+  return pick(closeUps?.length ? closeUps : dagmUltraCloseUps);
+}
+
+function pickDagmQuestion(profile) {
+  if (!profile) return pick(dagmUltraQuestions);
+  const questions = dagmActionQuestions[profile.label];
+  return pick(questions?.length ? questions : dagmUltraQuestions);
 }
 
 function classifyDagmAction(action) {

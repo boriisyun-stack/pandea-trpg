@@ -36,6 +36,7 @@ const docsDefs = [
 
 const el = {};
 let state = loadState();
+let activeDocLoad = 0;
 const portrait = {
   width: 512,
   height: 512,
@@ -94,6 +95,7 @@ function bindElements() {
     "clearHistoryBtn",
     "docsList",
     "docsFrame",
+    "docsSourceFrame",
     "docsOpenLink",
     "portraitEditor",
     "portraitCanvas",
@@ -387,12 +389,247 @@ function renderDocsPanel() {
 function selectDoc(id) {
   const doc = docsDefs.find(([docId]) => docId === id) ?? docsDefs[0];
   const [, , path] = doc;
-  el.docsFrame.src = encodeURI(path);
   el.docsOpenLink.href = path;
+  const loadId = ++activeDocLoad;
+
+  el.docsFrame.innerHTML = '<p class="muted">문서를 불러오는 중...</p>';
 
   el.docsList.querySelectorAll("button").forEach((button) => {
     button.classList.toggle("active", button.dataset.docId === doc[0]);
   });
+
+  loadMarkdownDoc(path)
+    .then((text) => {
+      if (loadId !== activeDocLoad) return;
+      el.docsFrame.innerHTML = renderMarkdown(text);
+      el.docsFrame.scrollTop = 0;
+    })
+    .catch(() => {
+      if (loadId !== activeDocLoad) return;
+      el.docsFrame.innerHTML = `
+        <p class="muted">문서를 렌더링하지 못했다. 새 탭으로 원문을 열 수 있다.</p>
+      `;
+    });
+}
+
+async function loadMarkdownDoc(path) {
+  try {
+    const response = await fetch(path, { cache: "no-cache" });
+    if (!response.ok) throw new Error("문서 로드 실패");
+    return await response.text();
+  } catch {
+    return await loadMarkdownDocFromFrame(path);
+  }
+}
+
+function loadMarkdownDocFromFrame(path) {
+  return new Promise((resolve, reject) => {
+    const frame = el.docsSourceFrame;
+    const timer = globalThis.setTimeout(() => {
+      frame.onload = null;
+      reject(new Error("문서 로드 시간 초과"));
+    }, 3000);
+
+    frame.onload = () => {
+      globalThis.clearTimeout(timer);
+      try {
+        const text = frame.contentDocument?.body?.innerText ?? "";
+        if (!text.trim()) throw new Error("빈 문서");
+        resolve(text);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    frame.src = encodeURI(path);
+  });
+}
+
+function renderMarkdown(markdown) {
+  const lines = String(markdown).replace(/\r\n?/g, "\n").split("\n");
+  const html = [];
+  let paragraph = [];
+  let index = 0;
+
+  const flushParagraph = () => {
+    if (paragraph.length === 0) return;
+    html.push(`<p>${renderInline(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  };
+
+  while (index < lines.length) {
+    const line = lines[index];
+    const trimmed = line.trim();
+
+    if (trimmed === "") {
+      flushParagraph();
+      index += 1;
+      continue;
+    }
+
+    if (trimmed.startsWith("```")) {
+      flushParagraph();
+      const language = trimmed.slice(3).trim();
+      const code = [];
+      index += 1;
+      while (index < lines.length && !lines[index].trim().startsWith("```")) {
+        code.push(lines[index]);
+        index += 1;
+      }
+      if (index < lines.length) index += 1;
+      const className = language ? ` class="language-${escapeHtml(language)}"` : "";
+      html.push(`<pre><code${className}>${escapeHtml(code.join("\n"))}</code></pre>`);
+      continue;
+    }
+
+    const heading = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+    if (heading) {
+      flushParagraph();
+      const level = heading[1].length;
+      html.push(`<h${level}>${renderInline(heading[2])}</h${level}>`);
+      index += 1;
+      continue;
+    }
+
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+      flushParagraph();
+      html.push("<hr>");
+      index += 1;
+      continue;
+    }
+
+    if (isTableStart(lines, index)) {
+      flushParagraph();
+      const table = collectTable(lines, index);
+      html.push(renderTable(table.rows));
+      index = table.nextIndex;
+      continue;
+    }
+
+    if (/^>\s?/.test(trimmed)) {
+      flushParagraph();
+      const quote = [];
+      while (index < lines.length && /^>\s?/.test(lines[index].trim())) {
+        quote.push(lines[index].trim().replace(/^>\s?/, ""));
+        index += 1;
+      }
+      html.push(`<blockquote>${renderMarkdownBlocks(quote)}</blockquote>`);
+      continue;
+    }
+
+    if (/^[-*+]\s+/.test(trimmed)) {
+      flushParagraph();
+      const items = [];
+      while (index < lines.length && /^[-*+]\s+/.test(lines[index].trim())) {
+        items.push(lines[index].trim().replace(/^[-*+]\s+/, ""));
+        index += 1;
+      }
+      html.push(`<ul>${items.map((item) => `<li>${renderInline(item)}</li>`).join("")}</ul>`);
+      continue;
+    }
+
+    if (/^\d+[.)]\s+/.test(trimmed)) {
+      flushParagraph();
+      const items = [];
+      while (index < lines.length && /^\d+[.)]\s+/.test(lines[index].trim())) {
+        items.push(lines[index].trim().replace(/^\d+[.)]\s+/, ""));
+        index += 1;
+      }
+      html.push(`<ol>${items.map((item) => `<li>${renderInline(item)}</li>`).join("")}</ol>`);
+      continue;
+    }
+
+    paragraph.push(trimmed);
+    index += 1;
+  }
+
+  flushParagraph();
+  return html.join("");
+}
+
+function renderMarkdownBlocks(lines) {
+  return renderMarkdown(lines.join("\n"));
+}
+
+function isTableStart(lines, index) {
+  if (index + 1 >= lines.length) return false;
+  const current = lines[index].trim();
+  const next = lines[index + 1].trim();
+  return current.includes("|") && isTableDivider(next);
+}
+
+function isTableDivider(line) {
+  if (!line.includes("|")) return false;
+  return splitTableRow(line).every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
+}
+
+function collectTable(lines, index) {
+  const rows = [splitTableRow(lines[index])];
+  index += 2;
+
+  while (index < lines.length && lines[index].trim().includes("|") && lines[index].trim() !== "") {
+    rows.push(splitTableRow(lines[index]));
+    index += 1;
+  }
+
+  return { rows, nextIndex: index };
+}
+
+function splitTableRow(line) {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function renderTable(rows) {
+  const [header, ...body] = rows;
+  const head = header.map((cell) => `<th>${renderInline(cell)}</th>`).join("");
+  const bodyRows = body.map((row) => {
+    const cells = row.map((cell) => `<td>${renderInline(cell)}</td>`).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
+  return `<table><thead><tr>${head}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+}
+
+function renderInline(value) {
+  const codeSpans = [];
+  const linkSpans = [];
+  let text = escapeHtml(value).replace(/`([^`]+)`/g, (_, code) => {
+    const token = `@@CODE${codeSpans.length}@@`;
+    codeSpans.push(`<code>${code}</code>`);
+    return token;
+  });
+
+  text = text
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => {
+      const token = `@@LINK${linkSpans.length}@@`;
+      linkSpans.push(`<a href="${sanitizeHref(href)}" target="_blank" rel="noreferrer">${label}</a>`);
+      return token;
+    })
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/_([^_]+)_/g, "<em>$1</em>");
+
+  for (const [index, link] of linkSpans.entries()) {
+    text = text.replace(`@@LINK${index}@@`, link);
+  }
+
+  for (const [index, code] of codeSpans.entries()) {
+    text = text.replace(`@@CODE${index}@@`, code);
+  }
+
+  return text;
+}
+
+function sanitizeHref(value) {
+  const href = String(value).trim();
+  if (/^(https?:|mailto:|#)/i.test(href)) return escapeHtml(href);
+  if (href.includes("javascript:")) return "#";
+  return escapeHtml(encodeURI(href));
 }
 
 function bindEvents() {
@@ -464,7 +701,20 @@ function bindEvents() {
     setSaveStatus("기록 비움");
   });
 
+  el.docsFrame.addEventListener("click", handleDocsClick);
   bindPortraitEvents();
+}
+
+function handleDocsClick(event) {
+  const link = event.target.closest?.("a");
+  if (!link) return;
+
+  const href = decodeURI(link.getAttribute("href") ?? "");
+  const doc = docsDefs.find(([, , path]) => href.endsWith(path.replace("../", "")) || href.endsWith(path));
+  if (!doc) return;
+
+  event.preventDefault();
+  selectDoc(doc[0]);
 }
 
 async function initPortraitEditor() {
