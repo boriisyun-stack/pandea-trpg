@@ -26,7 +26,7 @@
       <div class="panel-header">
         <div>
           <h2 id="promptTitle">입력</h2>
-          <p>질문을 적고 d6 여덟 개로 답변의 뼈대를 만든다.</p>
+          <p>질문을 적고 d20 두 개로 답변의 뼈대를 만든다.</p>
         </div>
       </div>
 
@@ -36,7 +36,7 @@
       </label>
 
       <div class="button-row">
-        <button id="rollAllBtn" type="button" class="primary">자동으로 8d6 굴리기</button>
+        <button id="rollAllBtn" type="button" class="primary">자동으로 2d20 굴리기</button>
         <button id="applyManualBtn" type="button">수동 주사위 적용</button>
         <button id="clearBtn" type="button">초기화</button>
       </div>
@@ -66,18 +66,18 @@
       </div>
       <ol class="recipe-list">
         <li>질문에서 핵심 단어 1~3개를 동그라미 친다.</li>
-        <li>d6 여덟 개를 굴린다. 없으면 하나를 여덟 번 굴린다.</li>
-        <li>각 표에서 나온 말을 그대로 쓰지 말고, 질문에 맞게 바꾼다.</li>
-        <li>응답은 결론, 근거, 장면 압력, 대가, 다음 선택 순서로 조립한다.</li>
-        <li>마지막 검증 표가 답을 짧게 하라면 과감히 줄인다.</li>
+        <li>d20 두 개를 굴린다. 첫 번째는 질문 읽기, 두 번째는 답변 생성이다.</li>
+        <li>합계는 답변 밀도, 차이는 꼬임을 정한다.</li>
+        <li>높은 값은 판데아 색, 낮은 값은 검증 규칙을 정한다.</li>
+        <li>표 결과를 그대로 쓰지 말고, 질문에 맞게 바꿔 한 문단으로 조립한다.</li>
       </ol>
     </section>
 
     <section class="panel table-panel" aria-labelledby="tableTitle">
       <div class="panel-header">
         <div>
-          <h2 id="tableTitle">8개 표</h2>
-          <p>실제 주사위로 굴릴 때 보는 표다.</p>
+          <h2 id="tableTitle">2d20 표</h2>
+          <p>d20 두 개와 파생값으로 보는 표다.</p>
         </div>
       </div>
       <div id="tableGrid" class="table-grid"></div>
