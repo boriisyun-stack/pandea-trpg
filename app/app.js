@@ -171,7 +171,9 @@ function bindElements() {
     "resourcesGrid",
     "skillsNote",
     "gearNote",
-    "storyNote",
+    "scarNote",
+    "bestiaryNote",
+    "memoNote",
     "diceMinusBtn",
     "dicePlusBtn",
     "diceCount",
@@ -241,7 +243,9 @@ function defaultState() {
       resources,
       skillsNote: "초급: 회피, 생존, 감각\n숙련표식:",
       gearNote: "낡은 단검, 찢어진 옷, 말린 고기 1끼",
-      storyNote: "흉터:\n도감:\n메모:",
+      scarNote: "",
+      bestiaryNote: "",
+      memoNote: "",
     },
     dice: {
       count: 4,
@@ -292,7 +296,7 @@ function normalizeState() {
   state.character.goal ??= defaults.character.goal;
   state.character.skillsNote ??= defaults.character.skillsNote;
   state.character.gearNote ??= defaults.character.gearNote;
-  state.character.storyNote ??= defaults.character.storyNote;
+  migrateStoryNoteFields(defaults);
 
   state.dice ??= defaults.dice;
   state.dice.count = cleanNumber(state.dice.count, defaults.dice.count, 1, 10);
@@ -312,6 +316,57 @@ function normalizeState() {
   state.oracle.dagmResult = normalizeOracleResult(state.oracle.dagmResult);
 }
 
+function migrateStoryNoteFields(defaults) {
+  const hasNewFields = ["scarNote", "bestiaryNote", "memoNote"].some((field) => {
+    return typeof state.character[field] === "string";
+  });
+
+  if (!hasNewFields && typeof state.character.storyNote === "string") {
+    const migrated = splitLegacyStoryNote(state.character.storyNote);
+    state.character.scarNote = migrated.scarNote;
+    state.character.bestiaryNote = migrated.bestiaryNote;
+    state.character.memoNote = migrated.memoNote;
+  }
+
+  state.character.scarNote ??= defaults.character.scarNote;
+  state.character.bestiaryNote ??= defaults.character.bestiaryNote;
+  state.character.memoNote ??= defaults.character.memoNote;
+  delete state.character.storyNote;
+}
+
+function splitLegacyStoryNote(value) {
+  const lines = String(value).replaceAll("\r\n", "\n").split("\n");
+  const result = {
+    scarNote: "",
+    bestiaryNote: "",
+    memoNote: "",
+  };
+  let current = "memoNote";
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^흉터\s*:?\s*$/.test(trimmed)) {
+      current = "scarNote";
+      continue;
+    }
+    if (/^도감\s*:?\s*$/.test(trimmed)) {
+      current = "bestiaryNote";
+      continue;
+    }
+    if (/^메모\s*:?\s*$/.test(trimmed)) {
+      current = "memoNote";
+      continue;
+    }
+    result[current] += `${line}\n`;
+  }
+
+  return {
+    scarNote: result.scarNote.trim(),
+    bestiaryNote: result.bestiaryNote.trim(),
+    memoNote: result.memoNote.trim(),
+  };
+}
+
 function renderSheet() {
   el.charName.value = state.character.name;
   el.charAlias.value = state.character.alias;
@@ -319,7 +374,9 @@ function renderSheet() {
   el.charGoal.value = state.character.goal;
   el.skillsNote.value = state.character.skillsNote;
   el.gearNote.value = state.character.gearNote;
-  el.storyNote.value = state.character.storyNote;
+  el.scarNote.value = state.character.scarNote;
+  el.bestiaryNote.value = state.character.bestiaryNote;
+  el.memoNote.value = state.character.memoNote;
 
   el.statsGrid.innerHTML = "";
   for (const [id, label] of statDefs) {
@@ -495,7 +552,9 @@ function bindEvents() {
     [el.charGoal, "goal"],
     [el.skillsNote, "skillsNote"],
     [el.gearNote, "gearNote"],
-    [el.storyNote, "storyNote"],
+    [el.scarNote, "scarNote"],
+    [el.bestiaryNote, "bestiaryNote"],
+    [el.memoNote, "memoNote"],
   ];
 
   for (const [input, field] of sheetInputs) {
@@ -1482,7 +1541,9 @@ function syncCharacterFields() {
   state.character.goal = el.charGoal.value;
   state.character.skillsNote = el.skillsNote.value;
   state.character.gearNote = el.gearNote.value;
-  state.character.storyNote = el.storyNote.value;
+  state.character.scarNote = el.scarNote.value;
+  state.character.bestiaryNote = el.bestiaryNote.value;
+  state.character.memoNote = el.memoNote.value;
 }
 
 function setDiceCount(value) {

@@ -550,6 +550,15 @@ html[data-theme="dark"] .layer-row.active {
   margin-top: 18px;
 }
 
+.story-note-box {
+  display: grid;
+  gap: 10px;
+}
+
+.story-note-box textarea {
+  min-height: 82px;
+}
+
 .side-stack {
   display: grid;
   gap: 16px;
