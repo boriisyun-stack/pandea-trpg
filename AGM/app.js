@@ -86,7 +86,7 @@ const dagmOpportunities = [
   "지금 잡으면 값이 싸지만, 장면이 지나면 비싸진다.",
   "작은 사람 하나가 도움을 줄 마음이 생긴다.",
   "위험한 길 하나와 안전한 척하는 길 하나가 동시에 보인다.",
-  "NPC 하나가 이 일을 기억한다.",
+  "누군가 이 일을 기억한다.",
   "도감에 적을 만한 특징이 드러난다.",
   "다음 판정에 쓸 수 있는 단서가 생긴다.",
 ];
@@ -96,7 +96,7 @@ const dagmUltraSceneForms = [
     label: "감각 선행",
     build: ({ place, seed, actionIntro, closeUp, npc, world, question }) => ultraSentence([
       actionIntro,
-      `${place}에서 ${seed.sensory}`,
+      makePlaceDetail(place, seed.sensory),
       seed.focus,
       seed.pressureLine,
       closeUp,
@@ -108,7 +108,7 @@ const dagmUltraSceneForms = [
     build: ({ place, seed, actionIntro, closeUp, npc, stake, question }) => ultraSentence([
       actionIntro,
       npc,
-      `${place}에서 ${seed.focus}`,
+      makePlaceDetail(place, seed.focus),
       `${stake} ${seed.pressureLine}`,
       closeUp,
     ], question),
@@ -118,7 +118,7 @@ const dagmUltraSceneForms = [
     build: ({ place, seed, actionIntro, closeUp, gmMove, world, question }) => ultraSentence([
       actionIntro,
       seed.pressureLine,
-      `${place}에서 ${seed.sensory}`,
+      makePlaceDetail(place, seed.sensory),
       gmMove,
       `${closeUp} ${world}`,
     ], question),
@@ -128,7 +128,7 @@ const dagmUltraSceneForms = [
     build: ({ place, seed, actionIntro, closeUp, npc, stake, question }) => ultraSentence([
       actionIntro,
       closeUp,
-      `${place}에서 ${seed.sensory}`,
+      makePlaceDetail(place, seed.sensory),
       npc,
       stake,
     ], question),
@@ -137,7 +137,7 @@ const dagmUltraSceneForms = [
     label: "질문 선행",
     build: ({ place, seed, actionIntro, closeUp, world, gmMove, question }) => ultraSentence([
       actionIntro,
-      `${place}에서 ${seed.focus}`,
+      makePlaceDetail(place, seed.focus),
       seed.pressureLine,
       gmMove,
       `${closeUp} ${world}`,
@@ -158,8 +158,7 @@ const dagmUltraSceneForms = [
 const dagmUltraActionForms = [
   {
     label: "판정 선행",
-    build: ({ verdict, memory, next, judge }) => ultraSentence([
-      judge,
+    build: ({ verdict, memory, next }) => ultraSentence([
       verdict,
       memory,
     ], next),
@@ -175,9 +174,7 @@ const dagmUltraActionForms = [
   },
   {
     label: "대가 선행",
-    build: ({ profile, verdict, cost, gmMove, memory, next, judge }) => ultraSentence([
-      cost,
-      judge,
+    build: ({ profile, verdict, gmMove, memory, next }) => ultraSentence([
       gmMove,
       verdict,
       `${profile.memory} ${memory}`,
@@ -185,17 +182,15 @@ const dagmUltraActionForms = [
   },
   {
     label: "반응 선행",
-    build: ({ verdict, npc, world, next, judge }) => ultraSentence([
+    build: ({ verdict, npc, world, next }) => ultraSentence([
       `${npc} ${world}`,
-      judge,
       verdict,
     ], next),
   },
   {
     label: "단서 선행",
-    build: ({ verdict, closeUp, memory, next, judge }) => ultraSentence([
+    build: ({ verdict, closeUp, memory, next }) => ultraSentence([
       closeUp,
-      judge,
       verdict,
       memory,
     ], next),
@@ -296,7 +291,7 @@ const dagmActionReadies = {
 };
 
 const dagmUltraNpcReactions = [
-  "이름 없는 NPC 하나가 모른 척하지만, 당신이 움직일 때만 숨을 멈춘다.",
+  "이름 모를 사람 하나가 모른 척하지만, 당신이 움직일 때만 숨을 멈춘다.",
   "상대는 대답을 늦춘다. 늦춘 시간이 대답보다 솔직하다.",
   "누군가 당신 편인 척 가까워지지만, 시선은 출구가 아니라 장부에 붙어 있다.",
   "경비 하나가 규칙대로 움직이지 않고, 개인적인 짜증으로 한 걸음 먼저 나온다.",
@@ -387,7 +382,7 @@ const dagmUltraQuestions = [
   "지금 판정을 걸고 들어가나, 단서 하나를 더 모으나?",
   "작게 잃고 지나가나, 크게 걸고 장면을 뒤집나?",
   "누구에게 보이게 움직이나, 누구에게만 숨기나?",
-  "이 장면에서 원하는 것은 정보인가, 안전인가, 이름인가?",
+  "지금 원하는 것은 정보인가, 안전인가, 이름인가?",
 ];
 
 const dagmActionQuestions = {
@@ -403,7 +398,7 @@ const dagmActionQuestions = {
   ],
   "이동/돌파": [
     "단숨에 넘나, 낮게 붙어 오르나, 소리를 줄이나?",
-    "넘고 숨나, 넘고 달리나, 남은 사람을 먼저 확인하나?",
+    "넘은 뒤 숨나, 바로 달리나, 남은 사람을 먼저 확인하나?",
     "손을 먼저 쓰나, 발을 먼저 올리나, 장비를 버리고 가볍게 움직이나?",
   ],
   "회피/추적": [
@@ -431,16 +426,16 @@ const dagmActionQuestions = {
 const dagmUltraSoftMoves = [
   "위험을 먼저 보여주고 선택권을 남긴다.",
   "대가를 예고하되 아직 터뜨리지 않는다.",
-  "NPC가 원하는 것을 행동으로 보여준다.",
+  "상대가 원하는 것이 말보다 몸짓으로 드러난다.",
   "닫히는 문과 열리는 틈을 동시에 둔다.",
-  "단서를 하나 주고 해석은 플레이어에게 맡긴다.",
-  "다음 판정의 위험을 장면 안에 보이게 둔다.",
+  "단서 하나가 보이지만 해석은 아직 당신 몫이다.",
+  "다음 시도의 위험이 장면 안에 먼저 보인다.",
 ];
 
 const dagmUltraHardMoves = [
   "대가를 바로 장면 안에 떨어뜨린다.",
-  "숨은 압력 하나를 공개 단서로 끌어올린다.",
-  "NPC가 먼저 움직여 선택지를 좁힌다.",
+  "가려져 있던 압력 하나가 공개 단서로 올라온다.",
+  "상대가 먼저 움직여 선택지를 좁힌다.",
   "시간, 자원, 의심 중 하나를 즉시 깎는다.",
   "성공해도 흔적이 남는 방식으로 장면을 닫는다.",
   "기다리던 위험이 지금 도착한다.",
@@ -453,7 +448,7 @@ const dagmActionProfiles = [
     actionLabel: "대화 행동으로",
     keys: ["말", "설득", "속", "거짓", "흥정", "위협", "도발", "대화", "묻"],
     roll: "매력+설득/공연, 거짓이면 지성+기만",
-    pressure: "상대의 성격, 현재 감정, 플레이어 기억이 먼저 반응한다.",
+    pressure: "상대의 성격, 현재 감정, 지난 행동의 기억이 먼저 반응한다.",
     memory: "말은 사라지지 않고 호칭이나 소문으로 남는다.",
   },
   {
@@ -490,7 +485,7 @@ const dagmActionProfiles = [
     keys: ["살피", "살핀", "조사", "찾", "냄새", "듣", "본", "확인", "도감", "표정", "흔적"],
     roll: "지성+감각/도감, 냄새나 흔적이면 체력/지성 중 맞는 것",
     pressure: "정답 대신 확인 가능한 단서가 먼저 나온다.",
-    memory: "발견한 단서는 다음 장면에서 정보 슬롯 후보가 된다.",
+    memory: "발견한 단서는 다음 장면의 정보 단서가 된다.",
   },
   {
     label: "마법/율법",
@@ -505,7 +500,7 @@ const dagmActionProfiles = [
     label: "정체/휴식",
     sceneLabel: "정체/휴식으로",
     actionLabel: "정체/휴식 행동으로",
-    keys: ["기다", "쉰", "휴식", "멈", "버틴", "자", "숨죽"],
+    keys: ["기다", "쉰", "휴식", "멈", "버틴", "잠", "숨죽", "기대", "고르", "아무것도", "아낀"],
     roll: "판정 없음 또는 체력/정신. 대신 세계 시계를 본다",
     pressure: "안전한 선택은 가능하지만 시간이 먼저 움직인다.",
     memory: "움직이지 않은 것도 누군가에게는 선택으로 보인다.",
@@ -547,7 +542,7 @@ function bindElements() {
 
 function defaultState() {
   return {
-    agmQuestion: "이 NPC는 지금 나를 이용하려 하나?",
+    agmQuestion: "이 사람은 지금 나를 이용하려 하나?",
     agmChance: 0,
     agmResult: null,
     dagmPlace: "콜로세움 우리",
@@ -588,6 +583,14 @@ function isStaleDagmResult(result) {
     "선언하는 순간 이 장면은",
     "당신의 선언은",
     "행동으로 읽히",
+    "도입 행동:",
+    "닫히는 기회:",
+    "기억 1줄:",
+    "숨은 압력 후보:",
+    "장부:",
+    "NPC 하나",
+    "플레이어",
+    "정보 슬롯",
     "초고도화 · 감각 선행",
     "초고도화 · NPC 선행",
     "초고도화 · 압력 선행",
@@ -703,6 +706,14 @@ function openDagmScene() {
   const place = state.dagmPlace.trim() || "지금 있는 곳";
   const density = densityLabel(state.dagmDensity);
 
+  if (profile) {
+    state.dagmResult = makeDagmPreRollScene(place, seed, profile, state.dagmDensity);
+    saveState();
+    renderOracleResult(el.dagmOutput, state.dagmResult, "장면 시작이나 행동 판정을 선택한다.");
+    setSaveStatus("DAGM 저장됨");
+    return;
+  }
+
   if (state.dagmDensity === "ultra") {
     state.dagmResult = makeUltraDagmScene(place, seed, action);
     saveState();
@@ -713,7 +724,7 @@ function openDagmScene() {
 
   const opportunity = pick(dagmOpportunities);
   const lines = [
-    action ? `도입 행동: ${action}` : null,
+    action ? `행동: ${action}` : null,
     `${place}. ${seed.sensory}`,
     seed.focus,
     seed.pressureLine,
@@ -722,17 +733,17 @@ function openDagmScene() {
   ].filter(Boolean);
 
   if (state.dagmDensity !== "short") {
-    lines.splice(4, 0, `닫히는 기회: ${opportunity}`);
-    lines.push(`기억 1줄: 이 장면은 ${seed.pressure} 때문에 다시 돌아온다.`);
+    lines.splice(4, 0, `기회: ${opportunity}`);
+    lines.push(`기억: 이 장면은 ${seed.pressure} 때문에 다시 돌아온다.`);
   }
 
   if (state.dagmDensity === "deep") {
-    lines.push(`숨은 압력 후보: ${pick(agmFollowUps)}`);
+    lines.push(`남는 압력: ${pick(agmFollowUps)}`);
   }
 
   state.dagmResult = {
-    title: profile ? "DAGM 장면 (판정 전)" : "DAGM 장면",
-    meta: makeDagmSceneMeta(density, seed, profile),
+    title: "DAGM 장면",
+    meta: makeDagmSceneMeta(density, seed, null),
     lines,
   };
 
@@ -772,7 +783,7 @@ function resolveDagmAction() {
   }
 
   if (state.dagmDensity === "deep") {
-    lines.push(`장부: NPC 하나는 이 행동을 ${resolved.answer}로 기억한다.`);
+    lines.push(`기억: 누군가는 이 행동을 ${resolved.answer}로 기억한다.`);
   }
 
   state.dagmResult = {
@@ -787,7 +798,7 @@ function resolveDagmAction() {
 }
 
 function resolveAgmTotal(total) {
-  if (total <= 3) return { type: "strongNo", answer: "아니오. 그리고 강한 수" };
+  if (total <= 3) return { type: "strongNo", answer: "아니오. 그리고 즉각적 대가" };
   if (total <= 5) return { type: "noBut", answer: "아니오. 하지만 작은 흔적" };
   if (total <= 8) return { type: "yesBut", answer: "예. 하지만 대가, 지연, 오해" };
   if (total <= 10) return { type: "yes", answer: "예" };
@@ -795,17 +806,17 @@ function resolveAgmTotal(total) {
 }
 
 function dagmResultLine(type, cost, opportunity) {
-  if (type === "strongNo") return `뜻대로 되지 않는다. ${cost} 강한 수가 바로 장면을 밀어붙인다.`;
+  if (type === "strongNo") return `뜻대로 되지 않는다. ${cost} 즉각적 대가가 바로 장면을 밀어붙인다.`;
   if (type === "noBut") return "뜻대로 되지는 않지만 작은 단서 하나가 손에 남는다.";
   if (type === "yesBut") return `원하는 결과는 얻는다. 하지만 ${cost}`;
   if (type === "yesAnd") return `원하는 결과를 얻고, ${opportunity}`;
   return "원하는 결과를 얻는다.";
 }
 
-function dagmMemoryLine(type, cost) {
-  if (type === "strongNo") return `위험이 공개되고, 누군가 이 실패를 기억한다. ${cost}`;
+function dagmMemoryLine(type, _cost) {
+  if (type === "strongNo") return "위험이 공개되고, 누군가 이 실패를 기억한다.";
   if (type === "noBut") return "작은 흔적은 남지만 문제의 핵심은 아직 닫혀 있다.";
-  if (type === "yesBut") return `성공은 했지만 ${cost}`;
+  if (type === "yesBut") return "성공의 흔적이 다음 장면까지 남는다.";
   if (type === "yesAnd") return "성공이 다음 장면의 단서나 호의로 이어진다.";
   return "누가 봤는지만 희미하게 남는다.";
 }
@@ -857,7 +868,7 @@ function makeUltraDagmScene(place, seed, action = "") {
   const profile = action.trim() ? classifyDagmAction(action) : null;
 
   if (profile) {
-    return makeUltraDagmPreRollScene(place, seed, profile);
+    return makeDagmPreRollScene(place, seed, profile, "ultra");
   }
 
   const context = {
@@ -877,6 +888,14 @@ function makeUltraDagmScene(place, seed, action = "") {
     meta: makeDagmUltraSceneMeta(form, seed, null),
     lines: form.build(context),
   };
+}
+
+function makeDagmPreRollScene(place, seed, profile, density) {
+  const result = makeUltraDagmPreRollScene(place, seed, profile);
+  result.title = density === "ultra"
+    ? "DAGM 초고도화 장면 (판정 전)"
+    : "DAGM 장면 (판정 전)";
+  return result;
 }
 
 function makeUltraDagmPreRollScene(place, seed, profile) {
@@ -904,8 +923,8 @@ function makeDagmSceneMeta(density, seed, profile) {
   return makeDagmPreRollMeta(profile);
 }
 
-function makeDagmUltraSceneMeta(form, seed, profile) {
-  const base = `초고도화 · ${form.label} · ${seed.impression} / ${seed.pressure} / ${seed.question}`;
+function makeDagmUltraSceneMeta(_form, seed, profile) {
+  const base = `초고도화 · ${seed.impression} / ${seed.pressure} / ${seed.question}`;
   if (!profile) return base;
   return makeDagmPreRollMeta(profile);
 }
@@ -933,12 +952,11 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     verdict: dagmUltraVerdictLine(resolved.type, cost, opportunity),
     memory: dagmMemoryLine(resolved.type, cost),
     next: pickDagmQuestion(profile),
-    judge: `판정 후보는 ${formatRollCandidate(profile.roll)}이다`,
   };
 
   return {
     title: "DAGM 초고도화 행동 판정",
-    meta: `초고도화 · ${form.label} · 2d6 ${dice[0]}+${dice[1]} = ${total} · ${resolved.answer}`,
+    meta: `초고도화 · 2d6 ${dice[0]}+${dice[1]} = ${total} · ${resolved.answer}`,
     lines: form.build(context),
   };
 }
@@ -961,6 +979,12 @@ function makePlaceLine(place, detail) {
   const cleanPlace = cleanUltraClause(place || "지금 있는 곳");
   const cleanDetail = cleanUltraClause(detail || "상황이 조용히 움직인다");
   return `${cleanPlace}. ${cleanDetail}`;
+}
+
+function makePlaceDetail(place, detail) {
+  const cleanPlace = cleanUltraClause(place || "지금 있는 곳");
+  const cleanDetail = cleanUltraClause(detail || "상황이 조용히 움직인다");
+  return `${cleanPlace}에는 ${cleanDetail}`;
 }
 
 function formatRollCandidate(roll) {
@@ -1003,6 +1027,12 @@ function pickDagmQuestion(profile) {
 
 function classifyDagmAction(action) {
   const text = action.replace(/\s+/g, "");
+  const holdProfile = dagmActionProfiles.find((item) => item.label === "정체/휴식");
+  const holdFirstKeys = ["아무것도", "기다", "쉰", "휴식", "멈", "버틴", "숨죽", "기대", "고르", "아낀"];
+  if (holdProfile && holdFirstKeys.some((key) => text.includes(key))) {
+    return holdProfile;
+  }
+
   const profile = dagmActionProfiles.find((item) => {
     return item.keys.some((key) => text.includes(key));
   });
@@ -1010,7 +1040,7 @@ function classifyDagmAction(action) {
     label: "일반 행동",
     sceneLabel: "일반 행동으로",
     actionLabel: "일반 행동으로",
-    roll: "가장 맞는 능력치+기술. 실패해도 장면은 전진",
+    roll: "가장 맞는 능력치+기술",
     pressure: "행동의 목적보다 장면에 남는 흔적을 먼저 본다.",
     memory: "이 행동은 작은 흔적, 시선, 시간 변화 중 하나를 남긴다.",
   };
