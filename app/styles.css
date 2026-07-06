@@ -168,6 +168,23 @@ h3 {
   flex-wrap: wrap;
 }
 
+.top-link {
+  display: inline-grid;
+  min-height: 38px;
+  place-items: center;
+  padding: 7px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.top-link:hover {
+  border-color: var(--accent);
+}
+
 .save-status {
   min-width: 126px;
   color: var(--muted);
