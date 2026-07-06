@@ -18,7 +18,7 @@ const dagmSeeds = [
     sensory: "식은 죽 냄새가 바닥의 쇠 냄새와 섞인다.",
     focus: "비어 있는 그릇 하나가 발치까지 굴러온다.",
     pressureLine: "배식 담당은 부족한 몫을 실수라고 부르지 않는다.",
-    questionLine: "누군가가 자기 몫 대신 네 손목 번호를 보고 있다.",
+    questionLine: "누군가가 자기 몫 대신 당신의 손목 번호를 보고 있다.",
     hook: "죽그릇, 배식통 바닥, 굶주린 시선이 모두 닿을 듯 가깝다.",
   },
   {
@@ -27,8 +27,8 @@ const dagmSeeds = [
     question: "누가 먼저 도착하나?",
     sensory: "사슬 끌리는 소리가 한 박자 늦게 따라온다.",
     focus: "모퉁이 안쪽에서 이미 발소리가 멈춰 있다.",
-    pressureLine: "경비는 네 이름 대신 별명을 부르며 가까워진다.",
-    questionLine: "네가 움직이기 전에 도주로 하나가 조용히 닫힌다.",
+    pressureLine: "경비는 당신의 이름 대신 별명을 부르며 가까워진다.",
+    questionLine: "당신이 움직이기 전에 도주로 하나가 조용히 닫힌다.",
     hook: "그림자, 벽 틈, 발자국 하나가 아직 남아 있다.",
   },
   {
@@ -37,8 +37,8 @@ const dagmSeeds = [
     question: "누가 값을 올리나?",
     sensory: "낮은 흥정 소리가 사람들의 숨소리 사이를 지난다.",
     focus: "깨끗한 장갑을 낀 손이 낡은 장부 위에 동전을 올린다.",
-    pressureLine: "누군가 너를 사람과 물건이 같은 줄에 적는다.",
-    questionLine: "어둠 속 다른 손이 네 이름도 모른 채 한 닢을 더 얹는다.",
+    pressureLine: "누군가 당신을 사람과 물건이 같은 줄에 적는다.",
+    questionLine: "어둠 속 다른 손이 당신의 이름도 모른 채 한 닢을 더 얹는다.",
     hook: "장부 귀퉁이, 동전, 하인의 흔들리는 손목이 보인다.",
   },
   {
@@ -46,9 +46,9 @@ const dagmSeeds = [
     pressure: "비밀",
     question: "무엇이 기록과 다르나?",
     sensory: "마른 종이가 접히는 소리가 이상하게 크게 들린다.",
-    focus: "문서에는 네 이름이 없는데 낙인 번호만 붉은 줄로 표시되어 있다.",
+    focus: "문서에는 당신의 이름이 없는데 낙인 번호만 붉은 줄로 표시되어 있다.",
     pressureLine: "기록을 쥔 사람은 틀린 부분을 읽지 않고 손으로 가린다.",
-    questionLine: "가린 문장 끝에 네가 모르는 이름 하나가 삐져나온다.",
+    questionLine: "가린 문장 끝에 당신이 모르는 이름 하나가 삐져나온다.",
     hook: "문서 모서리, 잉크 얼룩, 낙인의 붉은 줄을 건드릴 수 있다.",
   },
   {
@@ -66,9 +66,9 @@ const dagmSeeds = [
     pressure: "세계반응",
     question: "어떤 소문으로 남나?",
     sensory: "방금까지 시끄럽던 곳이 너무 깨끗하게 조용하다.",
-    focus: "먼지가 없는 바닥에 네 발자국만 또렷하다.",
+    focus: "먼지가 없는 바닥에 당신의 발자국만 또렷하다.",
     pressureLine: "누군가 이 장면을 이미 이야기처럼 외우고 있다.",
-    questionLine: "경비 하나가 네 행동을 보고 웃으며 새 별명을 중얼거린다.",
+    questionLine: "경비 하나가 당신의 행동을 보고 웃으며 새 별명을 중얼거린다.",
     hook: "목격자, 발자국, 아직 퍼지지 않은 첫 문장이 남아 있다.",
   },
 ];
@@ -158,8 +158,8 @@ const dagmUltraSceneForms = [
 const dagmUltraActionForms = [
   {
     label: "판정 선행",
-    build: ({ action, verdict, memory, next, judge }) => ultraSentence([
-      `${action} 행동은 ${judge}`,
+    build: ({ verdict, memory, next, judge }) => ultraSentence([
+      `당신의 선언은 ${judge}`,
       verdict,
       memory,
     ], next),
@@ -175,9 +175,9 @@ const dagmUltraActionForms = [
   },
   {
     label: "대가 선행",
-    build: ({ action, profile, verdict, cost, gmMove, memory, next }) => ultraSentence([
+    build: ({ profile, verdict, cost, gmMove, memory, next }) => ultraSentence([
       cost,
-      `${action} 행동은 ${profile.label}로 읽힌다`,
+      `당신의 선언은 ${profileActionLabel(profile)} 읽힌다`,
       gmMove,
       verdict,
       `${profile.memory} ${memory}`,
@@ -185,17 +185,17 @@ const dagmUltraActionForms = [
   },
   {
     label: "반응 선행",
-    build: ({ action, profile, verdict, npc, world, next }) => ultraSentence([
+    build: ({ profile, verdict, npc, world, next }) => ultraSentence([
       `${npc} ${world}`,
-      `${action} 행동은 ${profile.label}로 읽히며 ${profile.roll} 판정이 맞다`,
+      `당신의 선언은 ${profileActionLabel(profile)} 읽히며 ${profile.roll} 판정이 맞다`,
       verdict,
     ], next),
   },
   {
     label: "단서 선행",
-    build: ({ action, profile, verdict, closeUp, memory, next }) => ultraSentence([
+    build: ({ profile, verdict, closeUp, memory, next }) => ultraSentence([
       closeUp,
-      `${action} 행동은 ${profile.label}로 읽히며 ${profile.roll} 판정이 맞다`,
+      `당신의 선언은 ${profileActionLabel(profile)} 읽히며 ${profile.roll} 판정이 맞다`,
       verdict,
       memory,
     ], next),
@@ -215,15 +215,20 @@ const dagmActionCloseUps = {
   "대화": [
     "상대의 입보다 손가락이 먼저 반응하고, 대답의 빈틈이 짧게 열린다.",
     "말이 끝나기 전에 주변 시선이 둘 사이의 거리를 재기 시작한다.",
-    "상대가 네 말을 듣는 척하지만, 시선은 네가 숨긴 물건 쪽으로 먼저 간다.",
+    "상대가 당신의 말을 듣는 척하지만, 시선은 당신이 숨긴 물건 쪽으로 먼저 간다.",
   ],
   "전투": [
     "칼끝이 먼저 빛나고, 경비의 손이 허리춤으로 내려간다.",
     "발소리가 바닥을 치자 가장 가까운 목격자가 한 걸음 물러난다.",
-    "경비의 시선이 네 칼보다 네 발목과 손목의 움직임을 먼저 본다.",
+    "경비의 시선이 당신의 칼보다 발목과 손목의 움직임을 먼저 본다.",
+  ],
+  "이동/돌파": [
+    "벽 윗부분의 먼지가 흔들리고, 발을 디딜 만한 홈 하나가 보인다.",
+    "넘어갈 길은 보이지만, 착지할 곳의 소리와 시선이 먼저 계산된다.",
+    "몸을 띄우는 순간 손목의 사슬이나 장비 하나가 걸릴 수 있는 위치가 드러난다.",
   ],
   "회피/추적": [
-    "도망칠 틈은 보이지만, 네 발밑의 흔적도 동시에 선명해진다.",
+    "도망칠 틈은 보이지만, 당신 발밑의 흔적도 동시에 선명해진다.",
     "모퉁이의 그림자가 길을 열고, 뒤쪽 발소리는 한 박자 빨라진다.",
     "닫힌 줄 알았던 틈 하나가 열리지만, 그 틈은 너무 많은 시선을 지나간다.",
   ],
@@ -233,24 +238,24 @@ const dagmActionCloseUps = {
     "보려던 것 옆에서 더 오래 숨겨진 흔적이 드러난다.",
   ],
   "마법/율법": [
-    "마나의 흐름이 네 손끝보다 먼저 주변 먼지를 끌어당긴다.",
+    "마나의 흐름이 당신의 손끝보다 먼저 주변 먼지를 끌어당긴다.",
     "보이지 않는 선 하나가 장면의 공기를 가르고, 누군가 그 변화를 느낀다.",
     "힘은 모이지만, 그 힘이 남길 냄새와 소문도 함께 짙어진다.",
   ],
   "정체/휴식": [
     "멈춘 사이에도 문밖의 발소리는 한 번 더 가까워진다.",
-    "쉬는 숨은 고르지만, 장면의 시간은 네 편이 아니다.",
+    "쉬는 숨은 고르지만, 장면의 시간은 당신 편이 아니다.",
     "기다림은 피해를 줄여도 기회를 그대로 보존해주지는 않는다.",
   ],
 };
 
 const dagmUltraNpcReactions = [
-  "이름 없는 NPC 하나가 모른 척하지만, 네가 움직일 때만 숨을 멈춘다.",
+  "이름 없는 NPC 하나가 모른 척하지만, 당신이 움직일 때만 숨을 멈춘다.",
   "상대는 대답을 늦춘다. 늦춘 시간이 대답보다 솔직하다.",
-  "누군가 네 편인 척 가까워지지만, 시선은 출구가 아니라 장부에 붙어 있다.",
+  "누군가 당신 편인 척 가까워지지만, 시선은 출구가 아니라 장부에 붙어 있다.",
   "경비 하나가 규칙대로 움직이지 않고, 개인적인 짜증으로 한 걸음 먼저 나온다.",
   "구경꾼은 웃지 않는다. 웃지 않는 사람이 이 장면의 값을 알고 있다.",
-  "동료나 목격자는 말 대신 물건을 옮겨 너에게 짧은 길을 만들어 준다.",
+  "동료나 목격자는 말 대신 물건을 옮겨 당신에게 짧은 길을 만들어 준다.",
 ];
 
 const dagmUltraWorldReactions = [
@@ -290,6 +295,11 @@ const dagmActionQuestions = {
     "끝까지 들이받나, 위협으로 멈추나, 경비의 손을 먼저 치나?",
     "피를 보나, 제압하나, 길만 열고 빠지나?",
     "칼을 높이 드나, 낮게 파고드나, 목격자를 먼저 의식하나?",
+  ],
+  "이동/돌파": [
+    "단숨에 넘나, 낮게 붙어 오르나, 소리를 줄이나?",
+    "넘고 숨나, 넘고 달리나, 남은 사람을 먼저 확인하나?",
+    "손을 먼저 쓰나, 발을 먼저 올리나, 장비를 버리고 가볍게 움직이나?",
   ],
   "회피/추적": [
     "빠르게 빠지나, 흔적을 지우나, 따라오는 자를 유인하나?",
@@ -334,6 +344,8 @@ const dagmUltraHardMoves = [
 const dagmActionProfiles = [
   {
     label: "대화",
+    sceneLabel: "대화로",
+    actionLabel: "대화 행동으로",
     keys: ["말", "설득", "속", "거짓", "흥정", "위협", "도발", "대화", "묻"],
     roll: "매력+설득/공연, 거짓이면 지성+기만",
     pressure: "상대의 성격, 현재 감정, 플레이어 기억이 먼저 반응한다.",
@@ -341,13 +353,26 @@ const dagmActionProfiles = [
   },
   {
     label: "전투",
+    sceneLabel: "전투로",
+    actionLabel: "전투 행동으로",
     keys: ["공격", "때", "벤", "찌르", "쏜", "막", "피하", "붙잡", "제압", "칼", "검", "무기", "달려", "돌진", "경비에게"],
     roll: "근력/민첩+무기, 방어는 회피/막기/버티기",
     pressure: "피해보다 위치, 시선, 소리가 먼저 전장을 바꾼다.",
     memory: "폭력은 끝나도 누가 먼저 손댔는지는 남는다.",
   },
   {
+    label: "이동/돌파",
+    sceneLabel: "이동/돌파로",
+    actionLabel: "이동/돌파 행동으로",
+    keys: ["점프", "뛰어넘", "넘어", "넘", "오르", "기어오", "벽", "담", "울타리", "통과", "건너", "돌파", "빠져나"],
+    roll: "민첩+운동. 힘으로 밀면 근력+운동",
+    pressure: "목표보다 발판, 착지 위치, 소리와 목격자가 먼저 장면을 바꾼다.",
+    memory: "넘어간 자리는 발자국, 흔들린 먼지, 부딪힌 장비 중 하나를 남긴다.",
+  },
+  {
     label: "회피/추적",
+    sceneLabel: "회피/추적으로",
+    actionLabel: "회피/추적 행동으로",
     keys: ["숨", "도망", "빠져", "피해", "달리", "기어", "잠입", "몰래"],
     roll: "민첩+은신/운동 또는 지성+판단",
     pressure: "길은 열리지만 뒤따라오는 흔적도 같이 생긴다.",
@@ -355,6 +380,8 @@ const dagmActionProfiles = [
   },
   {
     label: "조사",
+    sceneLabel: "조사로",
+    actionLabel: "조사 행동으로",
     keys: ["살피", "살핀", "조사", "찾", "냄새", "듣", "본", "확인", "도감", "표정", "흔적"],
     roll: "지성+감각/도감, 냄새나 흔적이면 체력/지성 중 맞는 것",
     pressure: "정답 대신 확인 가능한 단서가 먼저 나온다.",
@@ -362,6 +389,8 @@ const dagmActionProfiles = [
   },
   {
     label: "마법/율법",
+    sceneLabel: "마법/율법으로",
+    actionLabel: "마법/율법 행동으로",
     keys: ["마법", "마나", "그라듀", "율법", "주문", "권능", "화신"],
     roll: "마나+마법학 또는 율법 대가",
     pressure: "힘이 장면을 바꾸면 장면도 힘의 흔적을 되돌려 준다.",
@@ -369,6 +398,8 @@ const dagmActionProfiles = [
   },
   {
     label: "정체/휴식",
+    sceneLabel: "정체/휴식으로",
+    actionLabel: "정체/휴식 행동으로",
     keys: ["기다", "쉰", "휴식", "멈", "버틴", "자", "숨죽"],
     roll: "판정 없음 또는 체력/정신. 대신 세계 시계를 본다",
     pressure: "안전한 선택은 가능하지만 시간이 먼저 움직인다.",
@@ -455,7 +486,7 @@ function renderPanel() {
   el.dagmDensity.value = state.dagmDensity;
   el.dagmAction.value = state.dagmAction;
   renderOracleResult(el.agmOutput, state.agmResult, "질문을 적고 굴린다.");
-  renderOracleResult(el.dagmOutput, state.dagmResult, "장면을 열거나 행동을 처리한다.");
+  renderOracleResult(el.dagmOutput, state.dagmResult, "장면 시작이나 행동 판정을 선택한다.");
 }
 
 function bindEvents() {
@@ -540,7 +571,7 @@ function openDagmScene() {
   if (state.dagmDensity === "ultra") {
     state.dagmResult = makeUltraDagmScene(place, seed, action);
     saveState();
-    renderOracleResult(el.dagmOutput, state.dagmResult, "장면을 열거나 행동을 처리한다.");
+    renderOracleResult(el.dagmOutput, state.dagmResult, "장면 시작이나 행동 판정을 선택한다.");
     setSaveStatus("DAGM 저장됨");
     return;
   }
@@ -571,7 +602,7 @@ function openDagmScene() {
   };
 
   saveState();
-  renderOracleResult(el.dagmOutput, state.dagmResult, "장면을 열거나 행동을 처리한다.");
+  renderOracleResult(el.dagmOutput, state.dagmResult, "장면 시작이나 행동 판정을 선택한다.");
   setSaveStatus("DAGM 저장됨");
 }
 
@@ -585,7 +616,7 @@ function resolveDagmAction() {
   if (state.dagmDensity === "ultra") {
     state.dagmResult = makeUltraDagmAction(action, dice, total, resolved);
     saveState();
-    renderOracleResult(el.dagmOutput, state.dagmResult, "장면을 열거나 행동을 처리한다.");
+    renderOracleResult(el.dagmOutput, state.dagmResult, "장면 시작이나 행동 판정을 선택한다.");
     setSaveStatus("DAGM 저장됨");
     return;
   }
@@ -610,13 +641,13 @@ function resolveDagmAction() {
   }
 
   state.dagmResult = {
-    title: "DAGM 행동 처리",
+    title: "DAGM 행동 판정",
     meta: `${density} · 2d6 ${dice[0]}+${dice[1]} = ${total} · ${resolved.answer}`,
     lines,
   };
 
   saveState();
-  renderOracleResult(el.dagmOutput, state.dagmResult, "장면을 열거나 행동을 처리한다.");
+  renderOracleResult(el.dagmOutput, state.dagmResult, "장면 시작이나 행동 판정을 선택한다.");
   setSaveStatus("DAGM 저장됨");
 }
 
@@ -667,6 +698,7 @@ function pickDagmSceneSeed(action) {
   const profile = classifyDagmAction(action);
   const candidates = dagmSeeds.filter((seed) => {
     if (profile.label === "전투") return ["소리", "장소", "이상함"].includes(seed.impression);
+    if (profile.label === "이동/돌파") return ["장소", "소리", "이상함"].includes(seed.impression);
     if (profile.label === "회피/추적") return ["소리", "장소", "이상함"].includes(seed.impression);
     if (profile.label === "대화") return ["사람", "물건", "이상함"].includes(seed.impression);
     if (profile.label === "조사") return ["냄새", "물건", "이상함"].includes(seed.impression);
@@ -701,7 +733,7 @@ function makeUltraDagmScene(place, seed, action = "") {
 }
 
 function makeActionIntro(action, profile) {
-  return `네가 ${cleanUltraClause(action)}고 선언하는 순간 이 장면은 ${profile.label}로 열린다`;
+  return `당신이 ${cleanUltraClause(action)}고 선언하는 순간 이 장면은 ${profileSceneLabel(profile)} 열린다`;
 }
 
 function makeUltraDagmAction(action, dice, total, resolved) {
@@ -723,14 +755,22 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     verdict: dagmUltraVerdictLine(resolved.type, cost, opportunity),
     memory: dagmMemoryLine(resolved.type, cost),
     next: pickDagmQuestion(profile),
-    judge: `${profile.label}로 읽히고 판정 후보는 ${profile.roll}이다`,
+    judge: `${profileActionLabel(profile)} 읽히고 판정 후보는 ${profile.roll}이다`,
   };
 
   return {
-    title: "DAGM 초고도화 행동 처리",
+    title: "DAGM 초고도화 행동 판정",
     meta: `초고도화 · ${form.label} · 2d6 ${dice[0]}+${dice[1]} = ${total} · ${resolved.answer}`,
     lines: form.build(context),
   };
+}
+
+function profileSceneLabel(profile) {
+  return profile?.sceneLabel ?? "일반 행동으로";
+}
+
+function profileActionLabel(profile) {
+  return profile?.actionLabel ?? "일반 행동으로";
 }
 
 function pickDagmCloseUp(profile) {
@@ -751,7 +791,9 @@ function classifyDagmAction(action) {
     return item.keys.some((key) => text.includes(key));
   });
   return profile ?? {
-    label: "장면 행동",
+    label: "일반 행동",
+    sceneLabel: "일반 행동으로",
+    actionLabel: "일반 행동으로",
     roll: "가장 맞는 능력치+기술. 실패해도 장면은 전진",
     pressure: "행동의 목적보다 장면에 남는 흔적을 먼저 본다.",
     memory: "이 행동은 작은 흔적, 시선, 시간 변화 중 하나를 남긴다.",
