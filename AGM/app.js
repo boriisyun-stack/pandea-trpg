@@ -158,14 +158,16 @@ const dagmUltraSceneForms = [
 const dagmUltraActionForms = [
   {
     label: "판정 선행",
-    build: ({ verdict, memory, next }) => ultraSentence([
+    build: ({ speech, verdict, memory, next }) => ultraSentence([
+      speech,
       verdict,
       memory,
     ], next),
   },
   {
     label: "결과 선행",
-    build: ({ profile, verdict, closeUp, npc, next }) => ultraSentence([
+    build: ({ speech, profile, verdict, closeUp, npc, next }) => ultraSentence([
+      speech,
       verdict,
       profile.pressure,
       closeUp,
@@ -174,7 +176,8 @@ const dagmUltraActionForms = [
   },
   {
     label: "대가 선행",
-    build: ({ profile, verdict, gmMove, memory, next }) => ultraSentence([
+    build: ({ speech, profile, verdict, gmMove, memory, next }) => ultraSentence([
+      speech,
       gmMove,
       verdict,
       `${profile.memory} ${memory}`,
@@ -182,14 +185,16 @@ const dagmUltraActionForms = [
   },
   {
     label: "반응 선행",
-    build: ({ verdict, npc, world, next }) => ultraSentence([
+    build: ({ speech, verdict, npc, world, next }) => ultraSentence([
+      speech,
       `${npc} ${world}`,
       verdict,
     ], next),
   },
   {
     label: "단서 선행",
-    build: ({ verdict, closeUp, memory, next }) => ultraSentence([
+    build: ({ speech, verdict, closeUp, memory, next }) => ultraSentence([
+      speech,
       closeUp,
       verdict,
       memory,
@@ -710,7 +715,7 @@ function openDagmScene() {
   const density = densityLabel(state.dagmDensity);
 
   if (profile) {
-    state.dagmResult = makeDagmPreRollScene(place, seed, profile, state.dagmDensity);
+    state.dagmResult = makeDagmPreRollScene(place, seed, profile, state.dagmDensity, action);
     saveState();
     renderOracleResult(el.dagmOutput, state.dagmResult, "장면 시작이나 행동 판정을 선택한다.");
     setSaveStatus("DAGM 저장됨");
@@ -874,7 +879,7 @@ function makeUltraDagmScene(place, seed, action = "") {
   const profile = action.trim() ? classifyDagmAction(action) : null;
 
   if (profile) {
-    return makeDagmPreRollScene(place, seed, profile, "ultra");
+    return makeDagmPreRollScene(place, seed, profile, "ultra", action);
   }
 
   const context = {
@@ -896,16 +901,16 @@ function makeUltraDagmScene(place, seed, action = "") {
   };
 }
 
-function makeDagmPreRollScene(place, seed, profile, density) {
-  const result = makeUltraDagmPreRollScene(place, seed, profile);
+function makeDagmPreRollScene(place, seed, profile, density, action = "") {
+  const result = makeUltraDagmPreRollScene(place, seed, profile, action);
   result.title = density === "ultra"
     ? "DAGM 초고도화 장면 (판정 전)"
     : "DAGM 장면 (판정 전)";
   return result;
 }
 
-function makeUltraDagmPreRollScene(place, seed, profile) {
-  const ready = pickDagmActionReady(profile);
+function makeUltraDagmPreRollScene(place, seed, profile, action = "") {
+  const ready = makeDagmReadyLine(action, profile);
   const opening = pickDagmActionOpening(profile);
   const pressure = makePlaceDetail(place, seed.focus || seed.sensory);
   const witness = pickDagmNpcReaction(profile);
@@ -940,6 +945,66 @@ function makeDagmPreRollMeta(profile) {
   return `판정 전 · 후보: ${formatRollCandidate(profile.roll)}`;
 }
 
+function extractDagmSpeech(action) {
+  const text = String(action || "").trim();
+  const quoted = text.match(/["“‘']([^"”’']{1,80})["”’']/);
+  if (quoted) return cleanDagmSpeech(quoted[1]);
+
+  const shouted = text.match(/([^\s,，.。!?]+[!?…]?)[을를]\s*(?:외치|외친|소리치|소리친|고함|외쳐)/);
+  if (shouted) return cleanDagmSpeech(shouted[1]);
+
+  const said = text.match(/(.{1,40}?)(?:라고|이라고|라며|이라며)\s*(?:말|말하|말한|외치|외친|외쳐|소리치|소리친|속삭|중얼|묻|물|대답|도발|설득|부르)/);
+  if (said) {
+    const speech = cleanDagmSpeech(said[1]);
+    return speech.endsWith("달") ? `${speech}라` : speech;
+  }
+
+  return "";
+}
+
+function cleanDagmSpeech(value) {
+  return String(value)
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/^["“”‘’']+|["“”‘’']+$/g, "")
+    .slice(0, 80);
+}
+
+function formatDagmSpeech(value) {
+  const speech = cleanDagmSpeech(value);
+  return speech ? `"${speech}"` : "";
+}
+
+function makeDagmReadyLine(action, profile) {
+  const speech = extractDagmSpeech(action);
+  if (!speech) return pickDagmActionReady(profile);
+
+  const quoted = formatDagmSpeech(speech);
+  const isShout = /외치|외친|소리치|소리친|고함|외쳐/.test(action);
+  const isLowVoice = /속삭|중얼|낮게/.test(action);
+
+  if (profile?.label === "대화" && isShout) return `당신이 ${quoted} 하고 외치려는 순간`;
+  if (profile?.label === "대화" && isLowVoice) return `당신이 ${quoted}라고 낮게 말하려는 순간`;
+  if (profile?.label === "대화") return `당신이 ${quoted}라고 말하려는 순간`;
+  if (profile?.label === "이동/돌파") return `당신이 ${quoted} 하고 외치며 뛰려는 순간`;
+  if (profile?.label === "전투") return `당신이 ${quoted} 하고 내뱉으며 거리를 좁히는 순간`;
+  if (profile?.label === "회피/추적") return `당신이 ${quoted}라고 낮게 말하고 움직일 틈을 잡는 순간`;
+  if (profile?.label === "조사") return `당신이 ${quoted}라고 중얼거리며 자세히 확인하려는 순간`;
+  if (profile?.label === "마법/율법") return `당신이 ${quoted}라고 속삭이며 힘을 끌어올리는 순간`;
+  if (profile?.label === "정체/휴식") return `당신이 ${quoted}라고 낮게 말하고 숨을 고르는 순간`;
+  return `당신이 ${quoted}라고 말하며 행동에 들어가는 순간`;
+}
+
+function makeDagmSpeechTrace(action) {
+  const speech = extractDagmSpeech(action);
+  if (!speech) return "";
+
+  const quoted = formatDagmSpeech(speech);
+  if (/외치|외친|소리치|소리친|고함|외쳐/.test(action)) return `${quoted} 하는 당신의 외침이 먼저 장면에 남는다`;
+  if (/속삭|중얼|낮게/.test(action)) return `${quoted}라는 낮은 말이 먼저 장면에 남는다`;
+  return `${quoted}라는 말이 먼저 장면에 남는다`;
+}
+
 function makeUltraDagmAction(action, dice, total, resolved) {
   const profile = classifyDagmAction(action);
   const form = pick(dagmUltraActionForms);
@@ -952,6 +1017,7 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     action,
     profile,
     cost,
+    speech: makeDagmSpeechTrace(action),
     closeUp: pickDagmCloseUp(profile),
     npc: pickDagmNpcReaction(profile),
     world: pickDagmWorldReaction(profile),
@@ -985,6 +1051,9 @@ function pickDagmPreRollQuestion(profile) {
 function makePlaceDetail(place, detail) {
   const cleanPlace = cleanUltraClause(place || "지금 있는 곳");
   const cleanDetail = cleanUltraClause(detail || "상황이 조용히 움직인다");
+  if (/^[^,.，。]{1,16}(에는|에서)/.test(cleanDetail)) {
+    return `${cleanPlace}, ${cleanDetail}`;
+  }
   return `${cleanPlace}에는 ${cleanDetail}`;
 }
 
@@ -1037,7 +1106,12 @@ function classifyDagmAction(action) {
   const profile = dagmActionProfiles.find((item) => {
     return item.keys.some((key) => text.includes(key));
   });
-  return profile ?? {
+  if (profile) return profile;
+
+  const speechProfile = dagmActionProfiles.find((item) => item.label === "대화");
+  if (speechProfile && extractDagmSpeech(action)) return speechProfile;
+
+  return {
     label: "일반 행동",
     sceneLabel: "일반 행동으로",
     actionLabel: "일반 행동으로",
