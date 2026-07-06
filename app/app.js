@@ -116,6 +116,14 @@ const dagmOpportunities = [
   "다음 판정에 쓸 수 있는 단서가 생긴다.",
 ];
 
+const docsDefs = [
+  ["rulebook", "룰북", "../판데아_TRPG_룰북_v1.21.md"],
+  ["summary", "요약", "../판데아_TRPG_요약_v1.21.md"],
+  ["starter", "첫 플레이 키트", "../판데아_TRPG_첫플레이키트_v1.21.md"],
+  ["agm", "AGM", "../판데아_TRPG_AGM_v1.21.md"],
+  ["dagm", "DAGM", "../판데아_TRPG_DAGM_v1.21.md"],
+];
+
 const el = {};
 let state = loadState();
 const portrait = {
@@ -144,6 +152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderDicePanel();
   renderOraclePanel();
   renderHistory();
+  renderDocsPanel();
   bindEvents();
   setSaveStatus("자동 저장됨");
 });
@@ -182,6 +191,9 @@ function bindElements() {
     "dagmActionBtn",
     "dagmAction",
     "dagmOutput",
+    "docsList",
+    "docsFrame",
+    "docsOpenLink",
     "portraitEditor",
     "portraitCanvas",
     "portraitPreviewCanvas",
@@ -428,6 +440,32 @@ function renderOraclePanel() {
   el.dagmAction.value = state.oracle.dagmAction;
   renderOracleResult(el.agmOutput, state.oracle.agmResult, "질문을 적고 굴린다.");
   renderOracleResult(el.dagmOutput, state.oracle.dagmResult, "장면을 열거나 행동을 처리한다.");
+}
+
+function renderDocsPanel() {
+  el.docsList.innerHTML = "";
+
+  for (const [id, label] of docsDefs) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.dataset.docId = id;
+    button.addEventListener("click", () => selectDoc(id));
+    el.docsList.append(button);
+  }
+
+  selectDoc("rulebook");
+}
+
+function selectDoc(id) {
+  const doc = docsDefs.find(([docId]) => docId === id) ?? docsDefs[0];
+  const [, , path] = doc;
+  el.docsFrame.src = encodeURI(path);
+  el.docsOpenLink.href = path;
+
+  el.docsList.querySelectorAll("button").forEach((button) => {
+    button.classList.toggle("active", button.dataset.docId === doc[0]);
+  });
 }
 
 function bindEvents() {

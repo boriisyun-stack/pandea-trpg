@@ -194,6 +194,7 @@ h3 {
 .sheet-panel,
 .dice-panel,
 .oracle-panel,
+.docs-panel,
 .history-panel {
   padding: 18px;
 }
@@ -787,6 +788,60 @@ html[data-theme="dark"] .die.twist {
 
 .history-panel {
   grid-column: 1 / -1;
+}
+
+.docs-panel {
+  grid-column: 1 / -1;
+}
+
+.docs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.docs-list button {
+  min-height: 34px;
+  padding: 7px 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.docs-list button.active {
+  border-color: var(--accent);
+  background: #e7f4f2;
+  color: var(--accent-dark);
+}
+
+html[data-theme="dark"] .docs-list button.active {
+  background: #123532;
+}
+
+.doc-open-link {
+  display: inline-grid;
+  min-height: 34px;
+  place-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.doc-open-link:hover {
+  border-color: var(--accent);
+}
+
+.docs-frame {
+  width: 100%;
+  min-height: 720px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
 }
 
 .history-list {
