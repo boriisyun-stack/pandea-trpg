@@ -54,7 +54,7 @@
       <div class="section-row">
         <h3>캐릭터 이미지</h3>
       </div>
-      <div class="portrait-editor">
+      <div id="portraitEditor" class="portrait-editor">
         <div class="portrait-canvas-frame" aria-label="캐릭터 이미지 캔버스">
           <canvas id="portraitCanvas" width="512" height="512"></canvas>
           <canvas id="portraitPreviewCanvas" width="512" height="512"></canvas>
@@ -93,13 +93,35 @@
           </div>
 
           <div class="paint-actions">
-            <button id="undoPaintBtn" type="button">언두</button>
-            <button id="redoPaintBtn" type="button">리두</button>
+            <button id="undoPaintBtn" type="button" class="icon-button" aria-label="언두" title="언두">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 7H4v5"></path>
+                <path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.68"></path>
+              </svg>
+            </button>
+            <button id="redoPaintBtn" type="button" class="icon-button" aria-label="리두" title="리두">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 7h5v5"></path>
+                <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.68"></path>
+              </svg>
+            </button>
             <label class="file-control">
               이미지 넣기
               <input id="portraitUpload" type="file" accept="image/*">
             </label>
             <button id="downloadPortraitBtn" type="button">이미지 다운로드</button>
+            <button id="focusPortraitBtn" type="button" class="icon-button" aria-label="그림 화면 크게 보기" title="그림 화면 크게 보기">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 3H3v5"></path>
+                <path d="M16 3h5v5"></path>
+                <path d="M21 16v5h-5"></path>
+                <path d="M3 16v5h5"></path>
+                <path d="M3 8l5-5"></path>
+                <path d="M16 3l5 5"></path>
+                <path d="M21 16l-5 5"></path>
+                <path d="M8 21l-5-5"></path>
+              </svg>
+            </button>
           </div>
 
           <div class="paint-size-row">

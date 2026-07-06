@@ -130,6 +130,8 @@ const portrait = {
   isDrawing: false,
   startPoint: null,
   lastPoint: null,
+  hoverPoint: null,
+  pointerInside: false,
   backgroundChanging: false,
 };
 
@@ -180,6 +182,7 @@ function bindElements() {
     "dagmActionBtn",
     "dagmAction",
     "dagmOutput",
+    "portraitEditor",
     "portraitCanvas",
     "portraitPreviewCanvas",
     "paintColor",
@@ -191,6 +194,7 @@ function bindElements() {
     "redoPaintBtn",
     "portraitUpload",
     "downloadPortraitBtn",
+    "focusPortraitBtn",
     "portraitSize",
     "resizePortraitBtn",
     "addLayerBtn",
@@ -562,6 +566,7 @@ function bindPortraitEvents() {
     button.addEventListener("click", () => {
       portrait.activeTool = button.dataset.paintTool;
       updatePaintToolButtons();
+      renderPortraitOverlay();
     });
   });
 
@@ -570,6 +575,7 @@ function bindPortraitEvents() {
   el.brushSize.addEventListener("input", () => {
     el.brushSizeValue.textContent = el.brushSize.value;
     savePortraitToolPrefs();
+    renderPortraitOverlay();
   });
 
   el.backgroundColor.addEventListener("input", () => {
@@ -588,17 +594,26 @@ function bindPortraitEvents() {
   });
 
   el.portraitPreviewCanvas.addEventListener("pointerdown", beginPortraitPointer);
+  el.portraitPreviewCanvas.addEventListener("pointerenter", enterPortraitPointer);
   el.portraitPreviewCanvas.addEventListener("pointermove", movePortraitPointer);
   el.portraitPreviewCanvas.addEventListener("pointerup", endPortraitPointer);
   el.portraitPreviewCanvas.addEventListener("pointercancel", cancelPortraitPointer);
+  el.portraitPreviewCanvas.addEventListener("pointerleave", leavePortraitPointer);
 
   el.undoPaintBtn.addEventListener("click", undoPortrait);
   el.redoPaintBtn.addEventListener("click", redoPortrait);
   el.portraitUpload.addEventListener("change", uploadPortraitImage);
   el.downloadPortraitBtn.addEventListener("click", downloadPortraitImage);
+  el.focusPortraitBtn.addEventListener("click", togglePortraitFocusMode);
   el.resizePortraitBtn.addEventListener("click", resizePortraitCanvas);
   el.addLayerBtn.addEventListener("click", addPortraitLayer);
   el.deleteLayerBtn.addEventListener("click", deleteActivePortraitLayer);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && el.portraitEditor.classList.contains("focus-mode")) {
+      togglePortraitFocusMode(false);
+    }
+  });
 }
 
 function createPortraitLayer(name) {
@@ -629,6 +644,7 @@ function updatePortraitControls() {
   el.brushSizeValue.textContent = el.brushSize.value;
   el.portraitSize.value = String(portrait.width);
   updatePaintToolButtons();
+  updatePortraitFocusButton();
   renderLayerList();
   updateUndoRedoButtons();
 }
@@ -689,17 +705,42 @@ function updateUndoRedoButtons() {
   el.redoPaintBtn.disabled = portrait.redo.length === 0;
 }
 
+function togglePortraitFocusMode(force) {
+  const next = typeof force === "boolean"
+    ? force
+    : !el.portraitEditor.classList.contains("focus-mode");
+  el.portraitEditor.classList.toggle("focus-mode", next);
+  document.body.classList.toggle("portrait-focus-mode", next);
+  updatePortraitFocusButton();
+  renderPortraitOverlay();
+}
+
+function updatePortraitFocusButton() {
+  const focused = el.portraitEditor.classList.contains("focus-mode");
+  el.focusPortraitBtn.setAttribute("aria-label", focused ? "그림 화면 작게 보기" : "그림 화면 크게 보기");
+  el.focusPortraitBtn.title = focused ? "그림 화면 작게 보기" : "그림 화면 크게 보기";
+}
+
+function enterPortraitPointer(event) {
+  portrait.pointerInside = true;
+  portrait.hoverPoint = getPortraitPoint(event);
+  renderPortraitOverlay();
+}
+
 function beginPortraitPointer(event) {
   if (event.button !== 0) return;
   event.preventDefault();
 
   const layer = ensureActivePortraitLayer();
   const point = getPortraitPoint(event);
+  portrait.pointerInside = true;
+  portrait.hoverPoint = point;
 
   if (portrait.activeTool === "fill") {
     pushPortraitUndo();
     floodFillLayer(layer.canvas, Math.floor(point.x), Math.floor(point.y), hexToRgba(el.paintColor.value));
     renderPortrait();
+    renderPortraitOverlay();
     savePortraitState();
     setSaveStatus("이미지 저장됨");
     return;
@@ -715,26 +756,35 @@ function beginPortraitPointer(event) {
   if (portrait.drawTool === "brush" || portrait.drawTool === "eraser") {
     drawStroke(layer.canvas, point, point, portrait.drawTool === "eraser");
     renderPortrait();
+    renderPortraitOverlay();
   } else {
-    drawPortraitPreview(point);
+    renderPortraitOverlay(point);
   }
 }
 
 function movePortraitPointer(event) {
-  if (!portrait.isDrawing) return;
   event.preventDefault();
 
   const point = getPortraitPoint(event);
+  portrait.pointerInside = true;
+  portrait.hoverPoint = point;
+
+  if (!portrait.isDrawing) {
+    renderPortraitOverlay(point);
+    return;
+  }
+
   const layer = ensureActivePortraitLayer();
 
   if (portrait.drawTool === "brush" || portrait.drawTool === "eraser") {
     drawStroke(layer.canvas, portrait.lastPoint, point, portrait.drawTool === "eraser");
     portrait.lastPoint = point;
     renderPortrait();
+    renderPortraitOverlay(point);
     return;
   }
 
-  drawPortraitPreview(point);
+  renderPortraitOverlay(point);
 }
 
 function endPortraitPointer(event) {
@@ -752,7 +802,9 @@ function endPortraitPointer(event) {
   portrait.isDrawing = false;
   portrait.startPoint = null;
   portrait.lastPoint = null;
+  portrait.hoverPoint = point;
   renderPortrait();
+  renderPortraitOverlay(point);
   savePortraitState();
   setSaveStatus("이미지 저장됨");
 }
@@ -762,8 +814,14 @@ function cancelPortraitPointer() {
   portrait.isDrawing = false;
   portrait.startPoint = null;
   portrait.lastPoint = null;
-  clearPortraitPreview();
   renderPortrait();
+  renderPortraitOverlay();
+}
+
+function leavePortraitPointer() {
+  portrait.pointerInside = false;
+  portrait.hoverPoint = null;
+  if (!portrait.isDrawing) clearPortraitPreview();
 }
 
 function getPortraitPoint(event) {
@@ -802,10 +860,56 @@ function drawStroke(canvas, from, to, erase) {
   ctx.restore();
 }
 
-function drawPortraitPreview(point) {
-  clearPortraitPreview();
+function renderPortraitOverlay(point = portrait.hoverPoint) {
   const ctx = el.portraitPreviewCanvas.getContext("2d");
-  drawShape(ctx, portrait.startPoint, point, portrait.drawTool);
+  ctx.clearRect(0, 0, portrait.width, portrait.height);
+
+  if (
+    portrait.isDrawing
+    && portrait.startPoint
+    && point
+    && ["line", "rect", "ellipse"].includes(portrait.drawTool)
+  ) {
+    drawShape(ctx, portrait.startPoint, point, portrait.drawTool);
+  }
+
+  if (portrait.pointerInside && point) {
+    drawToolRange(ctx, point);
+  }
+}
+
+function drawToolRange(ctx, point) {
+  const tool = portrait.isDrawing ? portrait.drawTool : portrait.activeTool;
+  const size = cleanNumber(el.brushSize.value, 6, 1, 48);
+  const radius = tool === "fill" ? Math.max(7, size / 2) : size / 2;
+
+  ctx.save();
+  ctx.lineWidth = Math.max(1.25, portrait.width / 512);
+  ctx.setLineDash([5, 4]);
+  ctx.strokeStyle = tool === "eraser" ? "rgba(159, 47, 70, 0.92)" : "rgba(15, 118, 110, 0.95)";
+  ctx.fillStyle = tool === "fill" ? "rgba(15, 118, 110, 0.12)" : "rgba(255, 255, 255, 0.08)";
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+  ctx.lineWidth = Math.max(1, portrait.width / 768);
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, radius + 1.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  if (tool === "fill") {
+    ctx.strokeStyle = "rgba(15, 118, 110, 0.95)";
+    ctx.beginPath();
+    ctx.moveTo(point.x - radius * 0.75, point.y);
+    ctx.lineTo(point.x + radius * 0.75, point.y);
+    ctx.moveTo(point.x, point.y - radius * 0.75);
+    ctx.lineTo(point.x, point.y + radius * 0.75);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
 function drawShape(ctx, start, end, tool) {
