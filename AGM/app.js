@@ -284,6 +284,17 @@ const dagmActionOpenings = {
   ],
 };
 
+const dagmActionReadies = {
+  "대화": "당신이 말을 꺼내려는 순간",
+  "전투": "당신이 거리를 좁히려는 순간",
+  "이동/돌파": "당신이 몸을 띄우려는 순간",
+  "회피/추적": "당신이 움직일 틈을 잡는 순간",
+  "조사": "당신이 자세히 확인하려는 순간",
+  "마법/율법": "당신이 힘을 끌어올리려는 순간",
+  "정체/휴식": "당신이 숨을 고르려는 순간",
+  "일반 행동": "당신이 행동에 들어가려는 순간",
+};
+
 const dagmUltraNpcReactions = [
   "이름 없는 NPC 하나가 모른 척하지만, 당신이 움직일 때만 숨을 멈춘다.",
   "상대는 대답을 늦춘다. 늦춘 시간이 대답보다 솔직하다.",
@@ -320,18 +331,18 @@ const dagmActionWorldReactions = {
 
 const dagmUltraStakes = [
   "지금 고르면 작게 잃고, 미루면 크게 들킨다.",
-  "성공해도 누가 봤는지는 남는다.",
+  "시도하는 순간 누가 봤는지는 남는다.",
   "이득은 가까운데, 그 이득의 주인이 아직 보이지 않는다.",
   "시간을 벌 수는 있지만 기회 하나가 닫힌다.",
-  "힘으로 밀면 통과는 가능하다. 대신 이름이 먼저 퍼진다.",
-  "말로 넘기면 싸움은 피한다. 대신 다음 질문이 더 날카로워진다.",
+  "힘으로 밀려는 순간 이름이 먼저 퍼질 수 있다.",
+  "말로 넘기려면 다음 질문이 더 날카로워진다.",
 ];
 
 const dagmActionStakes = {
   "이동/돌파": [
-    "단숨에 넘으면 소리가 남고, 조용히 넘으면 시간이 든다.",
-    "넘는 데 성공해도 착지 위치가 다음 위험을 정한다.",
-    "장비를 챙기면 늦고, 몸만 넘기면 하나를 떨어뜨릴 수 있다.",
+    "넘으려면 소리와 시간을 먼저 저울질해야 한다.",
+    "착지 위치가 다음 위험을 정할 수 있다.",
+    "장비를 챙길수록 늦고, 몸만 움직이면 하나를 떨어뜨릴 수 있다.",
   ],
 };
 
@@ -647,6 +658,7 @@ function openDagmScene() {
   syncFields();
   const action = state.dagmAction.trim();
   const seed = pickDagmSceneSeed(action);
+  const profile = action ? classifyDagmAction(action) : null;
   const place = state.dagmPlace.trim() || "지금 있는 곳";
   const density = densityLabel(state.dagmDensity);
 
@@ -678,8 +690,8 @@ function openDagmScene() {
   }
 
   state.dagmResult = {
-    title: "DAGM 장면",
-    meta: `${density} · ${seed.impression} / ${seed.pressure} / ${seed.question}`,
+    title: profile ? "DAGM 장면 (판정 전)" : "DAGM 장면",
+    meta: makeDagmSceneMeta(density, seed, profile),
     lines,
   };
 
@@ -808,14 +820,27 @@ function makeUltraDagmScene(place, seed, action = "") {
   };
 
   return {
-    title: "DAGM 초고도화 장면",
-    meta: `초고도화 · ${form.label} · ${seed.impression} / ${seed.pressure} / ${seed.question}`,
+    title: profile ? "DAGM 초고도화 장면 (판정 전)" : "DAGM 초고도화 장면",
+    meta: makeDagmUltraSceneMeta(form, seed, profile),
     lines: form.build(context),
   };
 }
 
 function makeActionIntro(action, profile) {
-  return `당신이 ${cleanUltraClause(action)}, ${pickDagmActionOpening(profile)}`;
+  if (!action.trim()) return "";
+  return `${pickDagmActionReady(profile)}, ${pickDagmActionOpening(profile)}`;
+}
+
+function makeDagmSceneMeta(density, seed, profile) {
+  const base = `${density} · ${seed.impression} / ${seed.pressure} / ${seed.question}`;
+  if (!profile) return base;
+  return `${base} · 판정 전 · 후보: ${profile.roll}`;
+}
+
+function makeDagmUltraSceneMeta(form, seed, profile) {
+  const base = `초고도화 · ${form.label} · ${seed.impression} / ${seed.pressure} / ${seed.question}`;
+  if (!profile) return base;
+  return `${base} · 판정 전 · 후보: ${profile.roll}`;
 }
 
 function makeUltraDagmAction(action, dice, total, resolved) {
@@ -850,6 +875,10 @@ function makeUltraDagmAction(action, dice, total, resolved) {
 function pickDagmActionOpening(profile) {
   const openings = dagmActionOpenings[profile?.label ?? "일반 행동"];
   return pick(openings?.length ? openings : dagmActionOpenings["일반 행동"]);
+}
+
+function pickDagmActionReady(profile) {
+  return dagmActionReadies[profile?.label ?? "일반 행동"] ?? dagmActionReadies["일반 행동"];
 }
 
 function pickDagmCloseUp(profile) {
