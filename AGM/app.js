@@ -591,6 +591,9 @@ function isStaleDagmResult(result) {
     "NPC 하나",
     "플레이어",
     "정보 슬롯",
+    "상황:",
+    "압력:",
+    "선택:",
     "초고도화 · 감각 선행",
     "초고도화 · NPC 선행",
     "초고도화 · 압력 선행",
@@ -901,7 +904,7 @@ function makeDagmPreRollScene(place, seed, profile, density) {
 function makeUltraDagmPreRollScene(place, seed, profile) {
   const ready = pickDagmActionReady(profile);
   const opening = pickDagmActionOpening(profile);
-  const pressure = makePlaceLine(place, seed.focus || seed.sensory);
+  const pressure = makePlaceDetail(place, seed.focus || seed.sensory);
   const witness = pickDagmNpcReaction(profile);
   const stake = pickDagmStake(profile);
   const question = pickDagmPreRollQuestion(profile);
@@ -909,11 +912,12 @@ function makeUltraDagmPreRollScene(place, seed, profile) {
   return {
     title: "DAGM 초고도화 장면 (판정 전)",
     meta: makeDagmPreRollMeta(profile),
-    lines: [
-      `상황: ${ready}, ${cleanDisplayClause(opening)}.`,
-      `압력: ${cleanDisplayClause(pressure)}. ${cleanDisplayClause(witness)}.`,
-      `선택: ${cleanDisplayClause(stake)}. ${question}`,
-    ],
+    lines: ultraSentence([
+      `${ready}, ${cleanDisplayClause(opening)}`,
+      pressure,
+      witness,
+      stake,
+    ], question),
   };
 }
 
@@ -973,12 +977,6 @@ function pickDagmActionReady(profile) {
 function pickDagmPreRollQuestion(profile) {
   const questions = dagmPreRollQuestions[profile?.label ?? "일반 행동"];
   return pick(questions?.length ? questions : dagmPreRollQuestions["일반 행동"]);
-}
-
-function makePlaceLine(place, detail) {
-  const cleanPlace = cleanUltraClause(place || "지금 있는 곳");
-  const cleanDetail = cleanUltraClause(detail || "상황이 조용히 움직인다");
-  return `${cleanPlace}. ${cleanDetail}`;
 }
 
 function makePlaceDetail(place, detail) {
