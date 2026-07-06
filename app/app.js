@@ -834,7 +834,7 @@ function getPortraitPoint(event) {
 
 function drawStroke(canvas, from, to, erase) {
   const ctx = canvas.getContext("2d");
-  const size = cleanNumber(el.brushSize.value, 6, 1, 48);
+  const size = cleanNumber(el.brushSize.value, 6, 1, 128);
 
   ctx.save();
   ctx.lineCap = "round";
@@ -880,7 +880,7 @@ function renderPortraitOverlay(point = portrait.hoverPoint) {
 
 function drawToolRange(ctx, point) {
   const tool = portrait.isDrawing ? portrait.drawTool : portrait.activeTool;
-  const size = cleanNumber(el.brushSize.value, 6, 1, 48);
+  const size = cleanNumber(el.brushSize.value, 6, 1, 128);
   const radius = tool === "fill" ? Math.max(7, size / 2) : size / 2;
 
   ctx.save();
@@ -913,7 +913,7 @@ function drawToolRange(ctx, point) {
 }
 
 function drawShape(ctx, start, end, tool) {
-  const size = cleanNumber(el.brushSize.value, 6, 1, 48);
+  const size = cleanNumber(el.brushSize.value, 6, 1, 128);
   const x = Math.min(start.x, end.x);
   const y = Math.min(start.y, end.y);
   const width = Math.abs(end.x - start.x);
