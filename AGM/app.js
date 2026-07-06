@@ -159,7 +159,7 @@ const dagmUltraActionForms = [
   {
     label: "판정 선행",
     build: ({ verdict, memory, next, judge }) => ultraSentence([
-      `당신의 선언은 ${judge}`,
+      judge,
       verdict,
       memory,
     ], next),
@@ -175,9 +175,9 @@ const dagmUltraActionForms = [
   },
   {
     label: "대가 선행",
-    build: ({ profile, verdict, cost, gmMove, memory, next }) => ultraSentence([
+    build: ({ profile, verdict, cost, gmMove, memory, next, judge }) => ultraSentence([
       cost,
-      `당신의 선언은 ${profileActionLabel(profile)} 읽힌다`,
+      judge,
       gmMove,
       verdict,
       `${profile.memory} ${memory}`,
@@ -185,17 +185,17 @@ const dagmUltraActionForms = [
   },
   {
     label: "반응 선행",
-    build: ({ profile, verdict, npc, world, next }) => ultraSentence([
+    build: ({ verdict, npc, world, next, judge }) => ultraSentence([
       `${npc} ${world}`,
-      `당신의 선언은 ${profileActionLabel(profile)} 읽히며 ${profile.roll} 판정이 맞다`,
+      judge,
       verdict,
     ], next),
   },
   {
     label: "단서 선행",
-    build: ({ profile, verdict, closeUp, memory, next }) => ultraSentence([
+    build: ({ verdict, closeUp, memory, next, judge }) => ultraSentence([
       closeUp,
-      `당신의 선언은 ${profileActionLabel(profile)} 읽히며 ${profile.roll} 판정이 맞다`,
+      judge,
       verdict,
       memory,
     ], next),
@@ -246,6 +246,41 @@ const dagmActionCloseUps = {
     "멈춘 사이에도 문밖의 발소리는 한 번 더 가까워진다.",
     "쉬는 숨은 고르지만, 장면의 시간은 당신 편이 아니다.",
     "기다림은 피해를 줄여도 기회를 그대로 보존해주지는 않는다.",
+  ],
+};
+
+const dagmActionOpenings = {
+  "대화": [
+    "상대의 표정과 주변의 침묵이 먼저 흔들린다",
+    "말이 닿기 전에 시선들이 둘 사이의 거리를 재기 시작한다",
+  ],
+  "전투": [
+    "거리와 손목과 무기 끝이 한꺼번에 좁아진다",
+    "가장 가까운 발소리가 먼저 반응하고, 주변 시선이 뒤늦게 따라붙는다",
+  ],
+  "이동/돌파": [
+    "벽 위의 틈, 발판, 착지 지점이 한꺼번에 눈에 들어온다",
+    "몸이 뜨기 전에 먼저 소리 날 곳과 걸릴 곳이 드러난다",
+  ],
+  "회피/추적": [
+    "발소리와 그림자가 서로 다른 길을 가리킨다",
+    "열린 틈과 남을 흔적이 동시에 보인다",
+  ],
+  "조사": [
+    "가장 먼저 틀린 흔적 하나가 시야에 걸린다",
+    "보려던 것보다 어긋난 부분이 먼저 말을 건다",
+  ],
+  "마법/율법": [
+    "공기와 먼지가 힘의 방향으로 먼저 기울어진다",
+    "보이지 않는 선 하나가 당신의 손끝보다 먼저 움직인다",
+  ],
+  "정체/휴식": [
+    "멈춘 숨 사이로 시간의 압박이 먼저 다가온다",
+    "기다림이 만든 침묵이 문밖의 소리를 더 크게 만든다",
+  ],
+  "일반 행동": [
+    "주변의 시선과 사물의 위치가 먼저 반응한다",
+    "작은 움직임 하나가 장면의 압력을 다른 곳으로 밀어낸다",
   ],
 };
 
@@ -504,6 +539,9 @@ function isStaleDagmResult(result) {
     "네 행동",
     "네 발자국",
     "장면 행동",
+    "선언하는 순간 이 장면은",
+    "당신의 선언은",
+    "행동으로 읽히",
     "DAGM 행동 처리",
     "DAGM 초고도화 행동 처리",
   ].some((marker) => text.includes(marker));
@@ -777,7 +815,7 @@ function makeUltraDagmScene(place, seed, action = "") {
 }
 
 function makeActionIntro(action, profile) {
-  return `당신이 ${cleanUltraClause(action)}고 선언하는 순간 이 장면은 ${profileSceneLabel(profile)} 열린다`;
+  return `당신이 ${cleanUltraClause(action)}, ${pickDagmActionOpening(profile)}`;
 }
 
 function makeUltraDagmAction(action, dice, total, resolved) {
@@ -799,7 +837,7 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     verdict: dagmUltraVerdictLine(resolved.type, cost, opportunity),
     memory: dagmMemoryLine(resolved.type, cost),
     next: pickDagmQuestion(profile),
-    judge: `${profileActionLabel(profile)} 읽히고 판정 후보는 ${profile.roll}이다`,
+    judge: `판정 후보는 ${profile.roll}이다`,
   };
 
   return {
@@ -809,12 +847,9 @@ function makeUltraDagmAction(action, dice, total, resolved) {
   };
 }
 
-function profileSceneLabel(profile) {
-  return profile?.sceneLabel ?? "일반 행동으로";
-}
-
-function profileActionLabel(profile) {
-  return profile?.actionLabel ?? "일반 행동으로";
+function pickDagmActionOpening(profile) {
+  const openings = dagmActionOpenings[profile?.label ?? "일반 행동"];
+  return pick(openings?.length ? openings : dagmActionOpenings["일반 행동"]);
 }
 
 function pickDagmCloseUp(profile) {
