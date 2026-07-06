@@ -258,6 +258,14 @@ const dagmUltraNpcReactions = [
   "동료나 목격자는 말 대신 물건을 옮겨 당신에게 짧은 길을 만들어 준다.",
 ];
 
+const dagmActionNpcReactions = {
+  "이동/돌파": [
+    "가까운 경비가 고개를 돌리기 직전, 발판이 한 번 삐걱인다.",
+    "목격자 하나가 숨을 삼키지만 아직 소리를 내지는 않는다.",
+    "반대편의 누군가가 착지 지점에서 반 걸음 물러난다.",
+  ],
+};
+
 const dagmUltraWorldReactions = [
   "세계는 이 일을 즉시 처벌하지 않고 소문으로 저장한다.",
   "도시나 콜로세움의 작은 시계 하나가 조용히 1칸 움직인다.",
@@ -267,6 +275,14 @@ const dagmUltraWorldReactions = [
   "좋은 길과 나쁜 길이 갈라지는 게 아니라, 안전해 보이는 길에 이름표가 붙는다.",
 ];
 
+const dagmActionWorldReactions = {
+  "이동/돌파": [
+    "장면은 높이보다 소리, 착지 위치, 목격자의 시야를 먼저 기록한다.",
+    "벽 너머의 공간은 안전을 보장하지 않고 다음 위치를 요구한다.",
+    "통과한 뒤에도 흔들린 먼지와 발자국이 뒤쪽에 남는다.",
+  ],
+};
+
 const dagmUltraStakes = [
   "지금 고르면 작게 잃고, 미루면 크게 들킨다.",
   "성공해도 누가 봤는지는 남는다.",
@@ -275,6 +291,14 @@ const dagmUltraStakes = [
   "힘으로 밀면 통과는 가능하다. 대신 이름이 먼저 퍼진다.",
   "말로 넘기면 싸움은 피한다. 대신 다음 질문이 더 날카로워진다.",
 ];
+
+const dagmActionStakes = {
+  "이동/돌파": [
+    "단숨에 넘으면 소리가 남고, 조용히 넘으면 시간이 든다.",
+    "넘는 데 성공해도 착지 위치가 다음 위험을 정한다.",
+    "장비를 챙기면 늦고, 몸만 넘기면 하나를 떨어뜨릴 수 있다.",
+  ],
+};
 
 const dagmUltraQuestions = [
   "숨기나, 먼저 말하나, 아니면 상대가 착각하게 두나?",
@@ -463,6 +487,26 @@ function normalizeState() {
     : defaults.dagmDensity;
   state.dagmAction ??= defaults.dagmAction;
   state.dagmResult = normalizeOracleResult(state.dagmResult);
+
+  if (isStaleDagmResult(state.dagmResult)) {
+    state.dagmResult = null;
+  }
+}
+
+function isStaleDagmResult(result) {
+  if (!result) return false;
+  const text = JSON.stringify(result);
+  return [
+    "네가",
+    "너를",
+    "너에게",
+    "네 이름",
+    "네 행동",
+    "네 발자국",
+    "장면 행동",
+    "DAGM 행동 처리",
+    "DAGM 초고도화 행동 처리",
+  ].some((marker) => text.includes(marker));
 }
 
 function initThemeMode() {
@@ -698,7 +742,7 @@ function pickDagmSceneSeed(action) {
   const profile = classifyDagmAction(action);
   const candidates = dagmSeeds.filter((seed) => {
     if (profile.label === "전투") return ["소리", "장소", "이상함"].includes(seed.impression);
-    if (profile.label === "이동/돌파") return ["장소", "소리", "이상함"].includes(seed.impression);
+    if (profile.label === "이동/돌파") return ["장소", "소리"].includes(seed.impression);
     if (profile.label === "회피/추적") return ["소리", "장소", "이상함"].includes(seed.impression);
     if (profile.label === "대화") return ["사람", "물건", "이상함"].includes(seed.impression);
     if (profile.label === "조사") return ["냄새", "물건", "이상함"].includes(seed.impression);
@@ -718,9 +762,9 @@ function makeUltraDagmScene(place, seed, action = "") {
     seed,
     actionIntro: profile ? makeActionIntro(action, profile) : "",
     closeUp: pickDagmCloseUp(profile),
-    npc: pick(dagmUltraNpcReactions),
-    world: pick(dagmUltraWorldReactions),
-    stake: pick(dagmUltraStakes),
+    npc: pickDagmNpcReaction(profile),
+    world: pickDagmWorldReaction(profile),
+    stake: pickDagmStake(profile),
     question: pickDagmQuestion(profile),
     gmMove: pick(dagmUltraSoftMoves),
   };
@@ -749,8 +793,8 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     profile,
     cost,
     closeUp: pickDagmCloseUp(profile),
-    npc: pick(dagmUltraNpcReactions),
-    world: pick(dagmUltraWorldReactions),
+    npc: pickDagmNpcReaction(profile),
+    world: pickDagmWorldReaction(profile),
     gmMove,
     verdict: dagmUltraVerdictLine(resolved.type, cost, opportunity),
     memory: dagmMemoryLine(resolved.type, cost),
@@ -777,6 +821,24 @@ function pickDagmCloseUp(profile) {
   if (!profile) return pick(dagmUltraCloseUps);
   const closeUps = dagmActionCloseUps[profile.label];
   return pick(closeUps?.length ? closeUps : dagmUltraCloseUps);
+}
+
+function pickDagmNpcReaction(profile) {
+  if (!profile) return pick(dagmUltraNpcReactions);
+  const reactions = dagmActionNpcReactions[profile.label];
+  return pick(reactions?.length ? reactions : dagmUltraNpcReactions);
+}
+
+function pickDagmWorldReaction(profile) {
+  if (!profile) return pick(dagmUltraWorldReactions);
+  const reactions = dagmActionWorldReactions[profile.label];
+  return pick(reactions?.length ? reactions : dagmUltraWorldReactions);
+}
+
+function pickDagmStake(profile) {
+  if (!profile) return pick(dagmUltraStakes);
+  const stakes = dagmActionStakes[profile.label];
+  return pick(stakes?.length ? stakes : dagmUltraStakes);
 }
 
 function pickDagmQuestion(profile) {
