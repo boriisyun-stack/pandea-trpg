@@ -17,6 +17,7 @@
     </div>
     <div class="top-actions">
       <span id="saveStatus" class="save-status" aria-live="polite">자동 저장 준비됨</span>
+      <a class="top-link" href="../AGM/index.html">AGM / DAGM</a>
       <a class="top-link" href="../LLM/index.html">아날로그 LLM</a>
       <button id="themeToggleBtn" type="button">다크 모드</button>
       <button id="saveBtn" type="button">저장</button>
@@ -237,67 +238,6 @@
           <span>5-6 성공</span>
           <span>6 두 개마다 기회</span>
           <span>1이 절반 이상이면 꼬임 후보</span>
-        </div>
-      </section>
-
-      <section class="panel oracle-panel" aria-labelledby="oracleTitle">
-        <div class="panel-header">
-          <div>
-            <h2 id="oracleTitle">AGM / DAGM</h2>
-            <p>막히면 AGM, 장면이 필요하면 DAGM.</p>
-          </div>
-        </div>
-
-        <div class="oracle-block">
-          <h3>AGM 예/아니오</h3>
-          <label>
-            질문
-            <input id="agmQuestion" type="text" autocomplete="off">
-          </label>
-          <label>
-            가능성
-            <select id="agmChance">
-              <option value="-2">거의 불가능 -2</option>
-              <option value="-1">어려움 -1</option>
-              <option value="0">반반 0</option>
-              <option value="1">그럴듯함 +1</option>
-              <option value="2">거의 확실 +2</option>
-            </select>
-          </label>
-          <button id="agmRollBtn" type="button" class="primary">AGM 굴리기</button>
-          <div id="agmOutput" class="oracle-output">
-            <p class="muted">질문을 적고 굴린다.</p>
-          </div>
-        </div>
-
-        <div class="oracle-block">
-          <h3>DAGM</h3>
-          <div class="compact-grid">
-            <label>
-              장소
-              <input id="dagmPlace" type="text" autocomplete="off">
-            </label>
-            <label>
-              밀도
-              <select id="dagmDensity">
-                <option value="short">짧게</option>
-                <option value="normal">보통</option>
-                <option value="deep">깊게</option>
-                <option value="ultra">초고도화</option>
-              </select>
-            </label>
-          </div>
-          <div class="compact-actions">
-            <button id="dagmSceneBtn" type="button">장면 열기</button>
-            <button id="dagmActionBtn" type="button">행동 처리</button>
-          </div>
-          <label>
-            플레이어 행동
-            <textarea id="dagmAction" rows="4" spellcheck="false"></textarea>
-          </label>
-          <div id="dagmOutput" class="oracle-output">
-            <p class="muted">장면을 열거나 행동을 처리한다.</p>
-          </div>
         </div>
       </section>
     </aside>
