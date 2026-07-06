@@ -119,116 +119,106 @@ const dagmOpportunities = [
 const dagmUltraSceneForms = [
   {
     label: "감각 선행",
-    build: ({ place, seed, closeUp, npc, world, question }) => [
-      `장면: ${place}. ${seed.sensory} ${seed.focus}`,
-      `압력: ${seed.pressureLine}`,
-      `클로즈업: ${closeUp}`,
-      `반응: ${npc} ${world}`,
-      `질문: ${question}`,
-    ],
+    build: ({ place, seed, closeUp, npc, world, question }) => ultraSentence([
+      `${place}에서 ${seed.sensory}`,
+      seed.focus,
+      seed.pressureLine,
+      closeUp,
+      `${npc} ${world}`,
+    ], question),
   },
   {
     label: "NPC 선행",
-    build: ({ place, seed, closeUp, npc, stake, question }) => [
-      `반응: ${npc}`,
-      `장면: ${place}에서 ${seed.focus}`,
-      `압력: ${stake} ${seed.pressureLine}`,
-      `단서: ${closeUp}`,
-      `질문: ${question}`,
-    ],
+    build: ({ place, seed, closeUp, npc, stake, question }) => ultraSentence([
+      npc,
+      `${place}에서 ${seed.focus}`,
+      `${stake} ${seed.pressureLine}`,
+      closeUp,
+    ], question),
   },
   {
     label: "압력 선행",
-    build: ({ place, seed, closeUp, gmMove, world, question }) => [
-      `압력: ${seed.pressureLine}`,
-      `장면: ${place}. ${seed.sensory}`,
-      `GM 수: ${gmMove}`,
-      `단서: ${closeUp} ${world}`,
-      `질문: ${question}`,
-    ],
+    build: ({ place, seed, closeUp, gmMove, world, question }) => ultraSentence([
+      seed.pressureLine,
+      `${place}에서 ${seed.sensory}`,
+      gmMove,
+      `${closeUp} ${world}`,
+    ], question),
   },
   {
     label: "단서 선행",
-    build: ({ place, seed, closeUp, npc, stake, question }) => [
-      `단서: ${closeUp}`,
-      `장면: ${place}. ${seed.sensory}`,
-      `반응: ${npc}`,
-      `압력: ${stake}`,
-      `질문: ${question}`,
-    ],
+    build: ({ place, seed, closeUp, npc, stake, question }) => ultraSentence([
+      closeUp,
+      `${place}에서 ${seed.sensory}`,
+      npc,
+      stake,
+    ], question),
   },
   {
     label: "질문 선행",
-    build: ({ place, seed, closeUp, world, gmMove, question }) => [
-      `질문: ${question}`,
-      `장면: ${place}. ${seed.focus}`,
-      `압력: ${seed.pressureLine}`,
-      `GM 수: ${gmMove}`,
-      `남는 것: ${closeUp} ${world}`,
-    ],
+    build: ({ place, seed, closeUp, world, gmMove, question }) => ultraSentence([
+      `먼저 "${cleanUltraClause(question)}"라는 질문이 선다`,
+      `${place}에서 ${seed.focus}`,
+      seed.pressureLine,
+      gmMove,
+      `${closeUp} ${world}`,
+    ], "무엇을 하나"),
   },
   {
     label: "침묵 선행",
-    build: ({ place, seed, closeUp, npc, stake, question }) => [
-      `장면: 잠깐 조용해진다. ${place}의 공기가 ${seed.impression} 쪽으로 기운다.`,
-      `클로즈업: ${closeUp}`,
-      `반응: ${npc}`,
-      `압력: ${stake} ${seed.questionLine}`,
-      `질문: ${question}`,
-    ],
+    build: ({ place, seed, closeUp, npc, stake, question }) => ultraSentence([
+      `잠깐 조용해지고 ${place}에는 ${seed.pressure}의 무게가 내려앉는다`,
+      closeUp,
+      npc,
+      `${stake} ${seed.questionLine}`,
+    ], question),
   },
 ];
 
 const dagmUltraActionForms = [
   {
     label: "판정 선행",
-    build: ({ action, verdict, memory, next, judge }) => [
-      `행동: ${action}`,
-      `판정: ${judge}`,
-      `결과: ${verdict}`,
-      `기억: ${memory}`,
-      `다음: ${next}`,
-    ],
+    build: ({ action, verdict, memory, next, judge }) => ultraSentence([
+      `${action} 행동은 ${judge}`,
+      verdict,
+      memory,
+    ], next),
   },
   {
     label: "결과 선행",
-    build: ({ profile, verdict, closeUp, npc, next }) => [
-      `결과: ${verdict}`,
-      `장면: ${profile.pressure}`,
-      `클로즈업: ${closeUp}`,
-      `반응: ${npc}`,
-      `다음: ${next}`,
-    ],
+    build: ({ profile, verdict, closeUp, npc, next }) => ultraSentence([
+      verdict,
+      profile.pressure,
+      closeUp,
+      npc,
+    ], next),
   },
   {
     label: "대가 선행",
-    build: ({ action, profile, verdict, cost, gmMove, memory }) => [
-      `대가: ${cost}`,
-      `행동: ${action}`,
-      `GM 수: ${gmMove}`,
-      `결과: ${verdict}`,
-      `기억: ${profile.memory} ${memory}`,
-    ],
+    build: ({ action, profile, verdict, cost, gmMove, memory, next }) => ultraSentence([
+      cost,
+      `${action} 행동은 ${profile.label}로 읽힌다`,
+      gmMove,
+      verdict,
+      `${profile.memory} ${memory}`,
+    ], next),
   },
   {
     label: "반응 선행",
-    build: ({ action, profile, verdict, npc, world, next }) => [
-      `반응: ${npc} ${world}`,
-      `행동: ${action}`,
-      `판정: ${profile.roll}`,
-      `결과: ${verdict}`,
-      `질문: ${next}`,
-    ],
+    build: ({ action, profile, verdict, npc, world, next }) => ultraSentence([
+      `${npc} ${world}`,
+      `${action} 행동은 ${profile.label}로 읽히며 ${profile.roll} 판정이 맞다`,
+      verdict,
+    ], next),
   },
   {
     label: "단서 선행",
-    build: ({ action, profile, verdict, closeUp, memory, next }) => [
-      `단서: ${closeUp}`,
-      `행동: ${action}`,
-      `판정: ${profile.roll}`,
-      `결과: ${verdict}`,
-      `기억/선택: ${memory} ${next}`,
-    ],
+    build: ({ action, profile, verdict, closeUp, memory, next }) => ultraSentence([
+      closeUp,
+      `${action} 행동은 ${profile.label}로 읽히며 ${profile.roll} 판정이 맞다`,
+      verdict,
+      memory,
+    ], next),
   },
 ];
 
@@ -1747,7 +1737,23 @@ function dagmMemoryLine(type, cost) {
   if (type === "noBut") return "작은 흔적은 남지만 문제의 핵심은 아직 닫혀 있다.";
   if (type === "yesBut") return `성공은 했지만 ${cost}`;
   if (type === "yesAnd") return "성공이 다음 장면의 단서나 호의로 이어진다.";
-  return "장면은 전진하고, 누가 봤는지만 남기면 된다.";
+  return "누가 봤는지만 희미하게 남는다.";
+}
+
+function ultraSentence(clauses, question) {
+  const parts = clauses.map(cleanUltraClause).filter(Boolean);
+  const cleanQuestion = cleanUltraClause(question || "무엇을 하나");
+
+  if (parts.length === 0) return [`${cleanQuestion}?`];
+  return [`${parts.join(", ")}, 그러니 ${cleanQuestion}?`];
+}
+
+function cleanUltraClause(value) {
+  return String(value)
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[.?!]\s+/g, ", ")
+    .replace(/[.?!]+$/g, "");
 }
 
 function makeUltraDagmScene(place, seed) {
@@ -1789,7 +1795,7 @@ function makeUltraDagmAction(action, dice, total, resolved) {
     verdict: dagmUltraVerdictLine(resolved.type, cost, opportunity),
     memory: dagmMemoryLine(resolved.type, cost),
     next: pick(dagmUltraQuestions),
-    judge: `${profile.label}. ${profile.roll}`,
+    judge: `${profile.label}로 읽히고 판정 후보는 ${profile.roll}이다`,
   };
 
   return {
@@ -1813,11 +1819,11 @@ function classifyDagmAction(action) {
 }
 
 function dagmUltraVerdictLine(type, cost, opportunity) {
-  if (type === "strongNo") return `뜻대로 되지 않는다. ${cost} 그리고 위험이 먼저 움직인다.`;
+  if (type === "strongNo") return `뜻대로 되지 않고 ${cost} 위험이 먼저 움직인다.`;
   if (type === "noBut") return "뜻대로 되지는 않는다. 하지만 손에 남는 단서 하나가 다음 선택을 만든다.";
-  if (type === "yesBut") return `원하는 결과는 얻는다. 하지만 ${cost}`;
+  if (type === "yesBut") return `원하는 결과는 얻지만 ${cost}`;
   if (type === "yesAnd") return `원하는 결과를 얻고, ${opportunity}`;
-  return "원하는 결과를 얻는다. 장면은 길게 설명하지 않고 다음 선택으로 넘어간다.";
+  return "원하는 결과를 얻고 다음 선택을 할 틈이 열린다.";
 }
 
 function renderOracleResult(target, result, emptyText) {
