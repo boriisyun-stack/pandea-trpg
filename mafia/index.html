@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RP 마피아</title>
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem("pandea-mini-sheet-theme") || "light";
+  </script>
+  <link rel="stylesheet" href="../app/styles.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">정체 추리 게임</p>
+      <h1>RP 마피아</h1>
+    </div>
+    <div class="top-actions">
+      <span id="saveStatus" class="save-status" aria-live="polite">자동 저장 준비됨</span>
+      <a class="top-link" href="../index.html#mafia">게임 허브</a>
+      <button id="themeToggleBtn" type="button">다크 모드</button>
+      <button id="resetBtn" type="button" class="danger">초기화</button>
+    </div>
+  </header>
+
+  <main class="mafia-shell">
+    <section class="panel setup-panel" aria-labelledby="setupTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="setupTitle">게임 준비</h2>
+          <p>플레이어 이름을 줄마다 적고 역할을 배정한다.</p>
+        </div>
+      </div>
+
+      <label>
+        플레이어
+        <textarea id="playerNames" rows="9" spellcheck="false"></textarea>
+      </label>
+
+      <div class="setup-grid">
+        <label>
+          마피아 수
+          <input id="mafiaCount" type="number" min="1" max="6" inputmode="numeric">
+        </label>
+        <label class="check-row">
+          <input id="useDoctor" type="checkbox">
+          <span>의사 사용</span>
+        </label>
+        <label class="check-row">
+          <input id="useDetective" type="checkbox">
+          <span>탐정 사용</span>
+        </label>
+      </div>
+
+      <button id="dealBtn" type="button" class="primary">역할 배정</button>
+      <p id="setupHint" class="muted small-text"></p>
+    </section>
+
+    <section class="panel role-panel" aria-labelledby="roleTitle">
+      <div class="panel-header compact">
+        <div>
+          <h2 id="roleTitle">역할</h2>
+          <p>자기 이름만 눌러 확인하고 다시 숨긴다.</p>
+        </div>
+      </div>
+      <div id="roleList" class="role-list"></div>
+    </section>
+
+    <section class="panel phase-panel" aria-labelledby="phaseTitle">
+      <div class="panel-header compact">
+        <div>
+          <h2 id="phaseTitle">진행</h2>
+          <p>밤, 낮, 투표를 순서대로 넘긴다.</p>
+        </div>
+      </div>
+
+      <div class="phase-tabs" aria-label="진행 단계">
+        <button type="button" data-phase="night">밤</button>
+        <button type="button" data-phase="day">낮</button>
+        <button type="button" data-phase="vote">투표</button>
+        <button type="button" data-phase="result">결과</button>
+      </div>
+
+      <div id="phaseOutput" class="phase-output"></div>
+
+      <div class="phase-actions">
+        <button id="newPromptBtn" type="button">RP 단서 새로 뽑기</button>
+        <button id="advanceBtn" type="button" class="primary">다음 단계</button>
+      </div>
+    </section>
+
+    <section class="panel notes-panel" aria-labelledby="notesTitle">
+      <div class="panel-header compact">
+        <div>
+          <h2 id="notesTitle">기록</h2>
+          <p>탈락, 의심, 밤 행동 결과를 남긴다.</p>
+        </div>
+        <button id="addLogBtn" type="button">기록 추가</button>
+      </div>
+
+      <label>
+        현재 메모
+        <textarea id="notesInput" rows="7" spellcheck="false"></textarea>
+      </label>
+      <div id="logList" class="log-list"></div>
+    </section>
+
+    <section class="panel guide-panel" aria-labelledby="guideTitle">
+      <div class="panel-header compact">
+        <div>
+          <h2 id="guideTitle">규칙 요약</h2>
+        </div>
+      </div>
+      <ol class="rule-list">
+        <li>마피아는 밤마다 한 명을 지목한다.</li>
+        <li>의사는 밤마다 한 명을 보호한다.</li>
+        <li>탐정은 밤마다 한 명의 정체를 확인한다.</li>
+        <li>공개 RP 태그는 말투 재료이고, 개인 압력은 자기 연기 재료다.</li>
+        <li>낮에는 모두가 말하고, 투표로 한 명을 탈락시킨다.</li>
+        <li>마피아가 모두 탈락하면 시민 승리, 마피아 수가 시민 측 이상이면 마피아 승리다.</li>
+      </ol>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

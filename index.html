@@ -3,11 +3,48 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0; url=app/">
-  <title>판데아 TRPG</title>
-  <link rel="canonical" href="app/">
+  <title>TRPG 게임 허브</title>
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem("pandea-mini-sheet-theme") || "light";
+  </script>
+  <link rel="stylesheet" href="app/styles.css">
+  <link rel="stylesheet" href="hub/styles.css">
 </head>
 <body>
-  <p><a href="app/">판데아 TRPG 앱 열기</a></p>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">게임 선택</p>
+      <h1>TRPG 게임 허브</h1>
+    </div>
+    <div class="top-actions">
+      <button id="themeToggleBtn" type="button">다크 모드</button>
+    </div>
+  </header>
+
+  <main class="hub-shell">
+    <section class="panel game-list-panel" aria-labelledby="gameListTitle">
+      <div class="panel-header compact">
+        <div>
+          <h2 id="gameListTitle">등록된 게임</h2>
+          <p>게임을 고르면 필요한 도구만 바로 연다.</p>
+        </div>
+      </div>
+
+      <div class="game-choice-list" role="listbox" aria-label="게임 목록">
+        <button type="button" class="game-choice active" data-game="pandea" role="option" aria-selected="true">
+          <span class="choice-title">판데아 TRPG</span>
+          <span class="choice-meta">시트, 주사위, AGM/DAGM, 룰북</span>
+        </button>
+        <button type="button" class="game-choice" data-game="mafia" role="option" aria-selected="false">
+          <span class="choice-title">RP 마피아</span>
+          <span class="choice-meta">가벼운 RP가 섞인 정체 추리 게임</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="gameDetail" class="panel game-detail-panel" aria-live="polite"></section>
+  </main>
+
+  <script src="hub/app.js"></script>
 </body>
 </html>

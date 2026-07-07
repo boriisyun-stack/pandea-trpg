@@ -1,0 +1,209 @@
+.mafia-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 330px) minmax(0, 1fr);
+  gap: 16px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 20px 28px;
+}
+
+.setup-panel,
+.role-panel,
+.phase-panel,
+.notes-panel,
+.guide-panel {
+  padding: 18px;
+}
+
+.setup-panel,
+.guide-panel {
+  align-self: start;
+}
+
+.role-panel,
+.phase-panel,
+.notes-panel {
+  grid-column: 2;
+}
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.check-row input {
+  width: auto;
+  min-height: auto;
+  margin: 0 8px 0 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small-text {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.role-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.role-card {
+  display: grid;
+  gap: 10px;
+  min-height: 132px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.role-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.role-name {
+  display: grid;
+  gap: 5px;
+}
+
+.role-public {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.role-chip {
+  display: inline-grid;
+  width: fit-content;
+  min-height: 26px;
+  place-items: center;
+  padding: 4px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.role-desc {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.phase-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.phase-tabs button.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.phase-output {
+  display: grid;
+  gap: 12px;
+  min-height: 270px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.phase-output h3 {
+  font-size: 20px;
+}
+
+.phase-output p,
+.phase-output li {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.scene-text {
+  padding: 12px;
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  line-height: 1.65;
+}
+
+.phase-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.log-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.log-entry {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.rule-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 920px) {
+  .mafia-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .role-panel,
+  .phase-panel,
+  .notes-panel {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .phase-tabs,
+  .phase-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
