@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>판데아 아날로그 LLM</title>
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem("pandea-mini-sheet-theme") || "light";
+  </script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">판데아 TRPG</p>
+      <h1>아날로그 LLM</h1>
+    </div>
+    <div class="top-actions">
+      <a class="top-link" href="../app/index.html">앱으로</a>
+      <button id="themeToggleBtn" type="button">다크 모드</button>
+    </div>
+  </header>
+
+  <main class="llm-shell">
+    <section class="panel prompt-panel" aria-labelledby="promptTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="promptTitle">입력</h2>
+          <p>질문을 적고 d20 두 개로 답변의 뼈대를 만든다.</p>
+        </div>
+      </div>
+
+      <label>
+        질문 / 장면 / 만들고 싶은 답
+        <textarea id="promptInput" rows="7" spellcheck="false">콜로세움 밤 장면에서 NPC가 수상하게 말을 돌린다. 어떻게 처리하지?</textarea>
+      </label>
+
+      <div class="button-row">
+        <button id="rollAllBtn" type="button" class="primary">자동으로 2d20 굴리기</button>
+        <button id="applyManualBtn" type="button">수동 주사위 적용</button>
+        <button id="clearBtn" type="button">초기화</button>
+      </div>
+
+      <div id="manualDiceGrid" class="manual-dice-grid" aria-label="수동 주사위 입력"></div>
+    </section>
+
+    <section class="panel output-panel" aria-labelledby="outputTitle">
+      <div class="panel-header compact">
+        <div>
+          <h2 id="outputTitle">응답 카드</h2>
+        </div>
+        <button id="copyBtn" type="button">복사</button>
+      </div>
+
+      <div id="diceStrip" class="dice-strip"></div>
+      <div id="resultCards" class="result-cards"></div>
+      <textarea id="answerDraft" class="answer-draft" rows="12" spellcheck="false"></textarea>
+    </section>
+
+    <section class="panel recipe-panel" aria-labelledby="recipeTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="recipeTitle">종이로 하는 법</h2>
+          <p>이 페이지 없이도 아래 순서대로 굴리면 된다. 귀찮지만 그래서 아날로그다.</p>
+        </div>
+      </div>
+      <ol class="recipe-list">
+        <li>질문에서 핵심 단어 1~3개를 동그라미 친다.</li>
+        <li>d20 두 개를 굴린다. 첫 번째는 질문 읽기, 두 번째는 답변 생성이다.</li>
+        <li>합계는 답변 밀도, 차이는 꼬임을 정한다.</li>
+        <li>높은 값은 판데아 색, 낮은 값은 검증 규칙을 정한다.</li>
+        <li>표 결과를 그대로 쓰지 말고, 질문에 맞게 바꿔 한 문단으로 조립한다.</li>
+      </ol>
+    </section>
+
+    <section class="panel table-panel" aria-labelledby="tableTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="tableTitle">2d20 표</h2>
+          <p>d20 두 개와 파생값으로 보는 표다.</p>
+        </div>
+      </div>
+      <div id="tableGrid" class="table-grid"></div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

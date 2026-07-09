@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>판데아 TRPG 미니 시트</title>
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem("pandea-mini-sheet-theme") || "light";
+  </script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">판데아 TRPG</p>
+      <h1>미니 캐릭터 시트</h1>
+    </div>
+    <div class="top-actions">
+      <span id="saveStatus" class="save-status" aria-live="polite">자동 저장 준비됨</span>
+      <a class="top-link" href="../AGM/index.html">AGM / DAGM</a>
+      <a class="top-link" href="../LLM/index.html">아날로그 LLM</a>
+      <button id="themeToggleBtn" type="button">다크 모드</button>
+      <button id="saveBtn" type="button">저장</button>
+      <button id="resetBtn" type="button" class="danger">초기화</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="panel sheet-panel" aria-labelledby="sheetTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="sheetTitle">캐릭터</h2>
+          <p>이름, 능력치, 자원, 메모만 빠르게 적는다.</p>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <label>
+          이름
+          <input id="charName" type="text" autocomplete="off">
+        </label>
+        <label>
+          별명 / 콘셉트
+          <input id="charAlias" type="text" autocomplete="off">
+        </label>
+        <label>
+          출신 / 노예가 된 이유
+          <input id="charOrigin" type="text" autocomplete="off">
+        </label>
+        <label>
+          지금 원하는 것
+          <input id="charGoal" type="text" autocomplete="off">
+        </label>
+      </div>
+
+      <div class="section-row">
+        <h3>캐릭터 이미지</h3>
+      </div>
+      <div id="portraitEditor" class="portrait-editor">
+        <div class="portrait-canvas-frame" aria-label="캐릭터 이미지 캔버스">
+          <canvas id="portraitCanvas" width="512" height="512"></canvas>
+          <canvas id="portraitPreviewCanvas" width="512" height="512"></canvas>
+        </div>
+
+        <div class="paint-dock">
+          <div class="paint-toolbar" aria-label="그리기 도구">
+            <button type="button" data-paint-tool="brush">그리기</button>
+            <button type="button" data-paint-tool="eraser">지우기</button>
+            <button type="button" data-paint-tool="fill">페인트</button>
+            <button type="button" data-paint-tool="line">직선</button>
+            <button type="button" data-paint-tool="rect">사각형</button>
+            <button type="button" data-paint-tool="ellipse">원</button>
+          </div>
+
+          <div class="paint-controls">
+            <label>
+              색
+              <input id="paintColor" type="color" value="#20262a">
+            </label>
+            <label>
+              배경
+              <input id="backgroundColor" type="color" value="#f8faf9">
+            </label>
+            <label>
+              크기 <span id="brushSizeValue">6</span>
+              <input id="brushSize" type="range" min="1" max="128" value="6">
+            </label>
+            <label>
+              도형
+              <select id="shapeFill">
+                <option value="stroke">비어있음</option>
+                <option value="fill">차있음</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="paint-actions">
+            <button id="undoPaintBtn" type="button" class="icon-button" aria-label="언두" title="언두">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 7H4v5"></path>
+                <path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.68"></path>
+              </svg>
+            </button>
+            <button id="redoPaintBtn" type="button" class="icon-button" aria-label="리두" title="리두">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 7h5v5"></path>
+                <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.68"></path>
+              </svg>
+            </button>
+            <label class="file-control">
+              이미지 넣기
+              <input id="portraitUpload" type="file" accept="image/*">
+            </label>
+            <button id="downloadPortraitBtn" type="button">이미지 다운로드</button>
+            <button id="focusPortraitBtn" type="button" class="icon-button" aria-label="그림 화면 크게 보기" title="그림 화면 크게 보기">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 3H3v5"></path>
+                <path d="M16 3h5v5"></path>
+                <path d="M21 16v5h-5"></path>
+                <path d="M3 16v5h5"></path>
+                <path d="M3 8l5-5"></path>
+                <path d="M16 3l5 5"></path>
+                <path d="M21 16l-5 5"></path>
+                <path d="M8 21l-5-5"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="paint-size-row">
+            <label>
+              이미지 크기
+              <select id="portraitSize">
+                <option value="384">384</option>
+                <option value="512">512</option>
+                <option value="768">768</option>
+                <option value="1024">1024</option>
+              </select>
+            </label>
+            <button id="resizePortraitBtn" type="button">크기 변경</button>
+          </div>
+
+          <div class="layer-box">
+            <div class="layer-header">
+              <h4>레이어</h4>
+              <div class="layer-actions">
+                <button id="addLayerBtn" type="button">추가</button>
+                <button id="deleteLayerBtn" type="button">삭제</button>
+              </div>
+            </div>
+            <div id="layerList" class="layer-list" aria-label="레이어 목록"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-row">
+        <h3>능력치</h3>
+      </div>
+      <div id="statsGrid" class="stat-grid"></div>
+
+      <div class="section-row">
+        <h3>자원</h3>
+      </div>
+      <div id="resourcesGrid" class="resource-grid"></div>
+
+      <div class="notes-grid">
+        <label>
+          기술 / 숙련
+          <textarea id="skillsNote" rows="6" spellcheck="false"></textarea>
+        </label>
+        <label>
+          장비 / 음식 / 돈
+          <textarea id="gearNote" rows="6" spellcheck="false"></textarea>
+        </label>
+        <div class="story-note-box" aria-label="흉터, 도감, 메모">
+          <label>
+            흉터
+            <textarea id="scarNote" rows="3" spellcheck="false"></textarea>
+          </label>
+          <label>
+            도감
+            <textarea id="bestiaryNote" rows="3" spellcheck="false"></textarea>
+          </label>
+          <label>
+            메모
+            <textarea id="memoNote" rows="3" spellcheck="false"></textarea>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side-stack">
+      <section class="panel dice-panel" aria-labelledby="diceTitle">
+        <div class="panel-header">
+          <div>
+            <h2 id="diceTitle">주사위</h2>
+            <p>d6 개수를 정해서 굴린다.</p>
+          </div>
+        </div>
+
+        <div class="dice-count-control" aria-label="주사위 개수">
+          <button id="diceMinusBtn" type="button" aria-label="주사위 1개 줄이기">-</button>
+          <label>
+            개수
+            <input id="diceCount" type="number" min="1" max="10" inputmode="numeric">
+          </label>
+          <button id="dicePlusBtn" type="button" aria-label="주사위 1개 늘리기">+</button>
+        </div>
+
+        <div class="quick-counts" aria-label="빠른 주사위 개수">
+          <button type="button" data-count="1">1d</button>
+          <button type="button" data-count="2">2d</button>
+          <button type="button" data-count="3">3d</button>
+          <button type="button" data-count="4">4d</button>
+          <button type="button" data-count="5">5d</button>
+          <button type="button" data-count="6">6d</button>
+          <button type="button" data-count="8">8d</button>
+          <button type="button" data-count="10">10d</button>
+        </div>
+
+        <div class="difficulty-row">
+          <label class="toggle-line">
+            <input id="useDifficulty" type="checkbox">
+            난이도 비교
+          </label>
+          <label>
+            난이도
+            <input id="difficulty" type="number" min="0" max="12" inputmode="numeric">
+          </label>
+        </div>
+
+        <button id="rollBtn" type="button" class="primary">굴리기</button>
+
+        <div id="rollResult" class="roll-result">
+          <p class="muted">아직 굴린 결과가 없다.</p>
+        </div>
+
+        <div class="rule-strip">
+          <span>5-6 성공</span>
+          <span>6 두 개마다 기회</span>
+          <span>1이 절반 이상이면 꼬임 후보</span>
+        </div>
+      </section>
+    </aside>
+
+    <section class="panel history-panel" aria-labelledby="historyTitle">
+      <div class="panel-header compact">
+        <div>
+          <h2 id="historyTitle">최근 굴림</h2>
+        </div>
+        <button id="clearHistoryBtn" type="button">비우기</button>
+      </div>
+      <ol id="rollHistory" class="history-list"></ol>
+    </section>
+
+    <section class="panel docs-panel" aria-labelledby="docsTitle">
+      <div class="panel-header compact">
+        <div>
+          <h2 id="docsTitle">판데아 문서</h2>
+          <p>룰북, 요약, 첫 플레이 키트, AGM, DAGM을 바로 열어본다.</p>
+        </div>
+        <a id="docsOpenLink" class="doc-open-link" href="../판데아_TRPG_룰북_v1.21.md" target="_blank" rel="noreferrer">새 탭</a>
+      </div>
+      <div id="docsList" class="docs-list" aria-label="판데아 문서 목록"></div>
+      <article id="docsFrame" class="docs-frame markdown-body" tabindex="0" aria-live="polite"></article>
+      <iframe id="docsSourceFrame" class="docs-source-frame" title="판데아 문서 원본 로더" aria-hidden="true"></iframe>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

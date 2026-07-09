@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>판데아 TRPG AGM / DAGM</title>
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem("pandea-mini-sheet-theme") || "light";
+  </script>
+  <link rel="stylesheet" href="../app/styles.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">판데아 TRPG</p>
+      <h1>AGM / DAGM</h1>
+    </div>
+    <div class="top-actions">
+      <span id="saveStatus" class="save-status" aria-live="polite">자동 저장 준비됨</span>
+      <a class="top-link" href="../app/index.html">캐릭터 시트</a>
+      <a class="top-link" href="../LLM/index.html">아날로그 LLM</a>
+      <button id="themeToggleBtn" type="button">다크 모드</button>
+      <button id="resetBtn" type="button" class="danger">초기화</button>
+    </div>
+  </header>
+
+  <main class="agm-shell">
+    <section class="panel oracle-panel" aria-labelledby="agmTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="agmTitle">AGM 예/아니오</h2>
+          <p>막힌 판단을 짧게 넘긴다.</p>
+        </div>
+      </div>
+
+      <div class="oracle-block no-top-line">
+        <label>
+          질문
+          <input id="agmQuestion" type="text" autocomplete="off">
+        </label>
+        <label>
+          가능성
+          <select id="agmChance">
+            <option value="-2">거의 불가능 -2</option>
+            <option value="-1">어려움 -1</option>
+            <option value="0">반반 0</option>
+            <option value="1">그럴듯함 +1</option>
+            <option value="2">거의 확실 +2</option>
+          </select>
+        </label>
+        <button id="agmRollBtn" type="button" class="primary">AGM 굴리기</button>
+        <div id="agmOutput" class="oracle-output tall-output">
+          <p class="muted">질문을 적고 굴린다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel oracle-panel" aria-labelledby="dagmTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="dagmTitle">DAGM</h2>
+          <p>장면 시작과 행동 판정을 나눠서 GM처럼 진행한다.</p>
+        </div>
+      </div>
+
+      <div class="oracle-block no-top-line">
+        <div class="compact-grid">
+          <label>
+            장소
+            <input id="dagmPlace" type="text" autocomplete="off">
+          </label>
+          <label>
+            밀도
+            <select id="dagmDensity">
+              <option value="short">짧게</option>
+              <option value="normal">보통</option>
+              <option value="deep">깊게</option>
+              <option value="ultra">초고도화</option>
+            </select>
+          </label>
+        </div>
+        <div class="compact-actions">
+          <button id="dagmSceneBtn" type="button" title="주사위 없이 입력한 행동에서 다음 장면을 만든다.">장면 시작</button>
+          <button id="dagmActionBtn" type="button" title="2d6으로 입력한 행동의 결과와 대가를 정한다.">행동 판정</button>
+        </div>
+        <label>
+          당신의 행동
+          <textarea id="dagmAction" rows="7" spellcheck="false"></textarea>
+        </label>
+        <div id="dagmOutput" class="oracle-output tall-output">
+          <p class="muted">장면 시작이나 행동 판정을 선택한다.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js?v=20260706-dagm-speech-2"></script>
+</body>
+</html>
